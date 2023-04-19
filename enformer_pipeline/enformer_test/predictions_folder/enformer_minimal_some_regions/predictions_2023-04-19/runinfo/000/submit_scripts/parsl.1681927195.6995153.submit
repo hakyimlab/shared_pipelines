@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#PBS -S /bin/bash
+#PBS -N parsl.1681927195.6995153
+#PBS -m n
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=64:ngpus=4
+#PBS -o /lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/enformer_test/predictions_folder/enformer_minimal_some_regions/predictions_2023-04-19/runinfo/000/submit_scripts/parsl.1681927195.6995153.submit.stdout
+#PBS -e /lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/enformer_test/predictions_folder/enformer_minimal_some_regions/predictions_2023-04-19/runinfo/000/submit_scripts/parsl.1681927195.6995153.submit.stderr
+#PBS -l filesystems=home:grand:eagle
+#PBS -N enformer_predict_regions_reference
+#PBS -k doe
+
+conda activate /lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools/lib
+
+export JOBNAME="parsl.1681927195.6995153"
+
+set -e
+export CORES=$(getconf _NPROCESSORS_ONLN)
+[[ "1" == "1" ]] && echo "Found cores : $CORES"
+WORKERCOUNT=1
+
+# Deduplicate the nodefile
+HOSTFILE="$JOBNAME.nodes"
+if [ -z "$PBS_NODEFILE" ]; then
+    echo "localhost" > $HOSTFILE
+else
+    sort -u $PBS_NODEFILE > $HOSTFILE
+fi
+
+cat << MPIEXEC_EOF > cmd_$JOBNAME.sh
+process_worker_pool.py  --max_workers=4 -a polaris-login-01 -p 0 -c 1.0 -m None --poll 10 --task_port=54135 --result_port=54245 --logdir=/lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/enformer_test/predictions_folder/enformer_minimal_some_regions/predictions_2023-04-19/runinfo/000/htex_PBS --block_id=0 --hb_period=30  --hb_threshold=120 --cpu-affinity alternating --available-accelerators 0 1 2 3
+MPIEXEC_EOF
+chmod u+x cmd_$JOBNAME.sh
+
+mpiexec --bind-to none -n $WORKERCOUNT --hostfile $HOSTFILE /usr/bin/sh cmd_$JOBNAME.sh
+
+[[ "1" == "1" ]] && echo "All workers done"
+
+
