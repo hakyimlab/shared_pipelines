@@ -1,5 +1,5 @@
 {
-  "project_dir": "/lus/grand/projects/TFXcan/imlab/users/shared/enformer_pipeline/enformer_test",
+  "project_dir": "/lus/grand/projects/TFxcan/imlab/users/shared/enformer_pipeline/enformer_test",
   "interval_list_file": "/lus/grand/projects/TFXcan/imlab/users/shared/enformer_pipeline/metadata/intervals.txt",
   "prediction_data_name": "enformer_minimal",
   "prediction_id": "some_regions",
