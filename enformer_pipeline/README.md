@@ -30,11 +30,11 @@ This environment contains all the software needed to run the pipeline; and you s
 Instructions are below.
 
 ### 6. Run the pipeline
-There are two ways to do this (for now, #2 is recommended):
+There are two ways to do this (for now, #1 is recommended):
 
 1. After editing your `config.json` file , simply call: [`python3 ./scripts/enformer_predict.py`](./scripts/enformer_predict.py) --param_config `{path to config.json file}`. **Make sure that the `provider` option is set to 'highthroughput" in the config file.**
 
-2. Edit the [`enformer_predict.sh`](./scripts/enformer_predict.sh) file to include the path to your config.json file and then call: [`qsub ./enformer_predict.sh`](./scripts/enformer_predict.sh). **Make sure that the `provider` option is set to 'local" in the config file.** For now, this is the recommended way to run the pipeline.
+2. Edit the [`enformer_predict.sh`](./scripts/enformer_predict.sh) file to include the path to your config.json file and then call: [`qsub ./enformer_predict.sh`](./scripts/enformer_predict.sh). **Make sure that the `provider` option is set to 'local" in the config file.** 
 
 #### Difference between "highthroughput" and "local" providers
 
