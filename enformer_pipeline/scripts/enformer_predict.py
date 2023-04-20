@@ -1,8 +1,7 @@
-# Usage: This script is used to predict on batches using ENFORMER on individuals' regions
+# Description: This script is used for ENFORMER inference
 # Author: Temi
 # Date: Wed 25 Jan 2023
 
-#from __future__ import absolute_import, division, print_function, unicode_literals
 import os, sys, json
 import pandas as pd # for manipulating dataframes
 import time
@@ -21,7 +20,6 @@ whereis_script = os.path.dirname(__file__) #os.path.dirname(sys.argv[0]) # or os
 script_path = os.path.abspath(whereis_script)
 batch_utils_path = os.path.join(script_path, 'modules')
 sys.path.append(batch_utils_path)
-#print(sys.path)
 
 import loggerUtils
 import directives
@@ -30,6 +28,9 @@ import directives
 def main():
 
     params_path = args.param_config
+
+    if not os.path.isabs(params_path):
+        params_path = os.path.abspath(params_path)
 
     with open(f'{params_path}') as f:
         parameters = json.load(f)
@@ -55,7 +56,6 @@ def main():
         sequence_source = parameters['sequence_source']
         exclude_regions = parameters["exclude_regions"]
         reverse_complement = parameters["reverse_complement"]
-        create_hdf5_file = parameters["create_hdf5_file"]
     
         metadata_dir = parameters['metadata_dir']
         if not os.path.isdir(metadata_dir):
@@ -240,7 +240,7 @@ def main():
         json.dump(agg_dt, wj)
 
     # remove temporatry config file
-    print(f"INFO - Removing temporary config file at {os.path.join(batch_utils_path, 'tmp_config.json')}")
+    print(f"INFO - Cleaning up: Removing temporary config file at {os.path.join(batch_utils_path, 'tmp_config.json')}")
     os.remove(os.path.join(batch_utils_path, 'tmp_config.json'))
               
 if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
@@ -254,129 +254,3 @@ if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
 
     job_runtime = job_end - job_start
     print(f'INFO - Completed job in {job_runtime} seconds.')
-
-    
-
-
-
-# if create_hdf5_file == True:
-#         print(f'[INFO] Creating HDF5 database(s)')
-#         finished_predictions = pd.read_csv(logfile_csv)
-#         make_db = make_h5_db_parsl(use_parsl = use_parsl)
-
-#         db_parsl = []
-#         for each_id in id_list:
-#             regions_list = finished_predictions.loc[finished_predictions['individual'] == each_id, ].region.values.tolist()
-#             regions_list = list(set(regions_list))
-
-#             print(f'[INFO] Creating HDF5 database for {each_id} for {len(regions_list)} predictions.')
-
-#             regions_list_paths = [f'{output_dir}/{each_id}/{i}_predictions.h5' for i in regions_list]
-#             csv_file = f'{output_dir}/{each_id}_{prediction_id}_predictions.csv'
-#             h5_file = f'{output_dir}/{each_id}_{prediction_id}_predictions.hdf5'
-#             db_parsl.append(make_db(h5_file = h5_file, csv_file = csv_file, files_list = regions_list, files_path = regions_list_paths, dataset = each_id))
-
-        
-#         print(db_parsl)
-#         if use_parsl == True:
-#             exec_parsl = [q.result() for q in tqdm.tqdm(db_parsl, desc=f'[INFO] Executing database futures.')] 
-#             print(exec_parsl)
-
-
-
-    # #chr_list_of_regions = [r for r in list_of_regions if r.startswith(f"{chromosome}_")]
-    # for each_id in id_list:
-    #     app_futures = [] # collect futures here
-        
-    #     # filter where each_id is in the log file
-    #     if not logfile is None:
-    #         id_logfile = logfile.loc[logfile['individual'] == each_id, : ]
-    #     elif logfile is None:
-    #         id_logfile = logfile
-        
-    #     if sequence_source == 'personalized':
-    #         if not os.path.exists(f'{output_dir}/{each_id}'):
-    #             print(f'[INFO] Creating output directory at {output_dir}/{each_id}')
-    #             os.makedirs(f'{output_dir}/{each_id}/haplotype1')
-    #             os.makedirs(f'{output_dir}/{each_id}/haplotype2')
-    #     elif sequence_source == 'reference':
-    #         if not os.path.exists(f'{output_dir}/{each_id}'):
-    #             print(f'[INFO] Creating output directory at {output_dir}/{each_id}')
-    #             os.makedirs(f'{output_dir}/{each_id}/haplotype0')
-    #     elif sequence_source == 'random':
-    #         if not os.path.exists(f'{output_dir}/{each_id}'):
-    #             print(f'[INFO] Creating output directory at {output_dir}/{each_id}')
-    #             os.makedirs(f'{output_dir}/{each_id}/haplotype0')
-
-    #     print(f'[INFO] Collecting appfutures for {each_id}')
-    #     for chromosome in chromosomes:
-    #         chr_list_of_regions = [r for r in list_of_regions if r.startswith(f"{chromosome}_")]
-
-    #         if not chr_list_of_regions:
-    #             continue
-
-    #         chr_vcf_file = os.path.join(vcf_files_dict['folder'], vcf_files_dict['files'][chromosome])
-    #         if sequence_source == 'personalized':
-    #             def make_cyvcf_object(vcf_file=chr_vcf_file, sample=each_id):
-    #                 import cyvcf2
-    #                 return(cyvcf2.cyvcf2.VCF(vcf_file, samples=sample))
-    #         elif sequence_source == 'reference':
-    #             make_cyvcf_object = None
-    #         elif sequence_source == 'random':
-    #             make_cyvcf_object = None
-
-    #         #print(f'[INFO] Collecting parsl appfuture batches for {chromosome}: {len(chr_list_of_regions)}')
-    #         #for batch_query in batches:
-
-    #         batches = generate_batch(chr_list_of_regions, batch_n=batch_regions)
-    #         count = 0
-    #         #app_futures = []
-    #         for batch_query in batches:
-    #             count = count + 1
-    #             app_futures.append(prediction_fxn(batch_regions=batch_query, batch_num = count, id=each_id, vcf_func=make_cyvcf_object, script_path=script_path, output_dir=output_dir, logfile=id_logfile, predictions_log_file=logfile_csv))
-    
-
-
-
-    #for sample_list in sample_batches:
-    #     # collect all chromosomes
-    #     sample_app_futures = []
-    #     for chromosome in chromosomes:
-    #         chr_list_of_regions = [r for r in list_of_regions if r.startswith(f"{chromosome}_")]
-
-    #         if sequence_source == 'personalized':
-    #             chr_vcf_file = os.path.join(vcf_files_dict['folder'], vcf_files_dict['files'][chromosome])
-    #         elif sequence_source == 'reference':
-    #             chr_vcf_file = None
-
-    #         if not chr_list_of_regions:
-    #             print(f'[WARNING] {chromosome} region sites are not available.')
-    #             continue
-
-    #         region_batches = generate_n_batches(chr_list_of_regions, batch_n=batch_regions) # batch_regions total batches
-    #         count = 0
-    #         for region_list in region_batches:
-    #             sample_app_futures.append(prediction_fxn(batch_regions=region_list, samples=sample_list, path_to_vcf = chr_vcf_file, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source))
-
-    #  if sequence_source == 'reference':
-    #     print(f'INFO - Writing `aggregation_config_{prediction_data_name}_{prediction_id}.json` file to {metadata_dir}')
-
-    #     agg_dt = {'predictions_folder': project_dir, 'enformer_prediction_path': f'{output_dir}', 'prediction_logfiles_folder':prediction_logfiles_folder, 'prediction_data_name':prediction_data_name, 'sequence_source': sequence_source, 'run_date':run_date, 'prediction_id':prediction_id, 'individuals':None, 'n_individuals':n_individuals}
-
-    #     with(open(f'{metadata_dir}/aggregation_config_{prediction_data_name}_{prediction_id}.json', mode='w')) as wj:
-    #         json.dump(agg_dt, wj) 
-
-    # elif sequence_source == 'personalized':
-    #     print(f'INFO - Writing `aggregation_config_{prediction_data_name}_{prediction_id}.json` file to {metadata_dir}')
-
-    #     agg_dt = {'predictions_folder': project_dir, 'enformer_prediction_path': f'{output_dir}', 'prediction_logfiles_folder':prediction_logfiles_folder, 'prediction_data_name':prediction_data_name, 'sequence_source': sequence_source, 'run_date':run_date, 'prediction_id':prediction_id, 'individuals':individuals, 'n_individuals':n_individuals}
-
-            
-
-    # elif sequence_source == 'random':
-    #     print(f'INFO - Writing `aggregation_config_{prediction_data_name}_{prediction_id}.json` file to {metadata_dir}')
-
-    #     agg_dt = {'predictions_folder': project_dir, 'enformer_prediction_path': f'{output_dir}', 'prediction_logfiles_folder':prediction_logfiles_folder, 'prediction_data_name':prediction_data_name, 'sequence_source': sequence_source, 'run_date':run_date, 'prediction_id':prediction_id, 'individuals':None, 'n_individuals':n_individuals}
-
-    #     with(open(f'{metadata_dir}/aggregation_config_{prediction_data_name}_{prediction_id}.json', mode='w')) as wj:
-    #         json.dump(agg_dt, wj)      

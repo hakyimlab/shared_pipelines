@@ -210,7 +210,7 @@ def check_predictions_and_logs(sample, predictions_folder, log_folder, interval_
         queries_saved = [str(f'{predictions_folder}/{sample}/haplotype0/{query}_predictions.h5') for query in queries]
         queries_saved = np.array([os.path.isfile(q) for q in queries_saved])
 
-    if not queries_logged.shape[0] == queries_saved.shape[0]:
+    if queries_logged.shape[0] != queries_saved.shape[0]:
         raise Exception("Lengths of queries logged and saved conditions are not the same")
     queries_condition = queries_saved * queries_logged # true should not be predicted or logged; False should be
     queries_condition = queries_condition.tolist()
@@ -219,7 +219,7 @@ def check_predictions_and_logs(sample, predictions_folder, log_folder, interval_
         message = f'SUCCESS - For {sample}, all predictions match all logged queries in the interval list files minus excluded regions, if any.'
         return({'logtype': 'info', 'logmessage':message})
     else:
-        message = f'WARNING - For {sample}, either all predictions don\'t match all logged queries in the interval list files minus excluded regions or vice versa. So, we recommend re-running the enformer prediction pipeline with the same parameters. You may supply a csv file of regions to exclude if available, but this should not matter.'
+        message = f'WARNING - For {sample}, either all predictions don\'t match all logged queries in the interval list files minus excluded regions or vice versa. This can happen if you have supplied a list of intervals but have chosen to predict on a subset. If this is the case, this behavior is normal. If you are unsure, please re-run the enformer prediction pipeline with the same parameters. You may supply a csv file of regions to exclude if available, but this should not matter.'
         return({'logtype': 'warning', 'logmessage':message})
 
 def return_check_function(use_parsl, fxn=check_predictions_and_logs):

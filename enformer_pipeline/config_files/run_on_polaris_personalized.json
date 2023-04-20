@@ -6,7 +6,6 @@
   "prediction_id": "some_regions",
   "reverse_complement": false,
   "date": null,
-  "create_hdf5_file": false,
   "exclude_regions": true,
   "n_individuals": 24,
   "batch_individuals": 4,
@@ -69,7 +68,7 @@
     "queue": "preemptable",
     "account": "TFXcan",
     "hpc": "polaris",
-    "provider": "local",
+    "provider": "highthroughput",
     "worker_init":"source ~/.bashrc; conda activate /lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools/lib"
   }
 }

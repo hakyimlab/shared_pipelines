@@ -8,26 +8,37 @@ Pipeline used to run ENFORMER
 ## Usage
 
 ### 1. Clone the repo
-`git clone
+clone the repo using:
+    `git clone https://github.com/hakyimlab/shared_folder.git`. 
 
 ### 2. Install the software
 - If you don't have conda installed, please install conda. [Install conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)
+
 ### 3. Create conda environment
 - If you are on polaris, you can use the shared software environment: `/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools`
 
 - If you are not on polaris, you can create your own environment using the [`enformer-predict-tools.yaml`](./software/enformer-predict-tools.yaml) file.
 
     `conda env create -p <path to where you want to put the environment> (e.g. ./enformer-predict-tools) -f [](./software/enformer_pipeline/software/enformer-predict-tools.yaml)`
+
 This environment contains all the software needed to run the pipeline; and you should remember to use it in the configuration file defined below.
 
 ### 4. Activate conda environment
-`conda activate <path to where you put the environment> (e.g. ./enformer-predict-tools)`
+`conda activate <<path to the environment>> (e.g. ./enformer-predict-tools)`
 
 ### 5. Edit the config.json file
 Instructions are below.
 
 ### 6. Run the pipeline
-After editing your `config.json` file , simply call: [`python3 ./scripts/enformer_predict`](./parallel_enformer/enformer_predict.py) --param_config `{full path to config.json file}`
+There are two ways to do this (for now, #2 is recommended):
+
+1. After editing your `config.json` file , simply call: [`python3 ./scripts/enformer_predict.py`](./scripts/enformer_predict.py) --param_config `{path to config.json file}`. **Make sure that the `provider` option is set to 'highthroughput" in the config file.**
+
+2. Edit the [`enformer_predict.sh`](./scripts/enformer_predict.sh) file to include the path to your config.json file and then call: [`qsub ./enformer_predict.sh`](./scripts/enformer_predict.sh). **Make sure that the `provider` option is set to 'local" in the config file.** For now, this is the recommended way to run the pipeline.
+
+#### Difference between "highthroughput" and "local" providers
+
+The "highthroughput" provider is used when you want to run the pipeline on a cluster from the login nodes. To make sure your job does not stop when logged out, you can use screen or tmux. The "local" provider is used when you want to run the pipeline as if on your local machine. Here, you have direct access to some gpus, or have requested an interactive session. So, when submitting a pbs script or job, you need to use the "local" provider.
 
 An example of a config.json file is [here](./config_files). You should choose one depending on if you want to predict on the reference genome or on personalized genomes, and on what cluster you are on. Instructions for the config.json file are below. Template files for individuals and regions are [here](./metadata/). 
 
@@ -81,12 +92,13 @@ An example of a config.json file is [here](./config_files). You should choose on
 
 
 ## To-do
+- [ ] > :heavy_exclamation_mark: Allow the submission of a bash script to the queue.
 - [X] Check that `os.path.join` paths work correctly.
 - [X] User should supply the intervals list within the predictions folder.
 - [ ] Provide a module to ensure that inputs are appropriate and available
 - [ ] > :heavy_exclamation_mark: Provide checks to ensure that necessary files and folders are available.
 - [X] Change `hg38_fasta_file` to a better, more general name like `fasta_file`
-- [ ] Ensure that the pipeline works with relative paths.
+- [X] Ensure that the pipeline works with relative paths.
 - [X] Change "motif" to "region" in the predictions_log files names
 - [X] Pipeline should be able to predict on reverse complements
 - [X] Create config templates for different servers (beagle3, polaris, theta e.t.c.)
