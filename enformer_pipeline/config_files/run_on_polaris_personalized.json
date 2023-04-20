@@ -1,16 +1,17 @@
 {
-  "individuals": "/lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/metadata/individuals.txt",
-  "n_individuals": 12,
-  "project_dir": "/lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/enformer_test",
-  "interval_list_file": "/lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/metadata/intervals.txt",
-  "prediction_data_name": "enformer_minimal",
-  "prediction_id": "some_genes",
+  "individuals": "/lus/grand/projects/TFXcan/imlab/shared/pipelines/enformer_pipeline/metadata/individuals.txt",
+  "project_dir": "/lus/grand/projects/TFXcan/imlab/shared/pipelines/enformer_pipeline/enformer_test",
+  "interval_list_file": "/lus/grand/projects/TFXcan/imlab/shared/pipelines/enformer_pipeline/metadata/intervals.txt",
+  "prediction_data_name": "personalized_enformer_minimal",
+  "prediction_id": "some_regions",
+  "reverse_complement": false,
   "date": null,
   "create_hdf5_file": false,
   "exclude_regions": true,
-  "batch_individuals": 3,
+  "n_individuals": 24,
+  "batch_individuals": 4,
   "vcf_files": {
-    "folder": "/lus/grand/projects/covid-ct/imlab/data/GEUVADIS/vcf_snps_only",
+    "folder": "/lus/grand/projects/TFXcan/imlab/data/GEUVADIS/vcf_snps_only",
     "files": {
       "chr1": "ALL.chr1.shapeit2_integrated_SNPs_v2a_27022019.GRCh38.phased.vcf.gz",
       "chr2": "ALL.chr2.shapeit2_integrated_SNPs_v2a_27022019.GRCh38.phased.vcf.gz",
@@ -39,16 +40,16 @@
   },
   "sub_dir": true,
   "use_parsl": true,
-  "model_path": "/lus/grand/projects/covid-ct/imlab/data/enformer/raw",
-  "fasta_file": "/lus/grand/projects/covid-ct/imlab/data/hg_sequences/hg38/Homo_sapiens_assembly38.fasta",
-  "metadata_dir": "/lus/grand/projects/covid-ct/imlab/users/shared/enformer_pipeline/metadata",
+  "model_path": "/lus/grand/projects/TFXcan/imlab/data/enformer/raw",
+  "fasta_file": "/lus/grand/projects/TFXcan/imlab/data/hg_sequences/hg38/Homo_sapiens_assembly38.fasta",
+  "metadata_dir": "/lus/grand/projects/TFXcan/imlab/shared/pipelines/enformer_pipeline/metadata",
   "output_dir": "enformer_predictions",
   "tracks_to_save":"21,22,23",
-  "bins_to_save": "5,6,8",
+  "bins_to_save": "5,6,8,10",
   "sequence_source": "personalized",
   "predictions_log_dir": "predictions_log",
   "batch_regions": 5,
-  "n_regions": 10,
+  "n_regions": 20,
   "write_log": {
     "logdir": "job_logs",
     "logtypes": {
@@ -59,7 +60,7 @@
     }
   },
   "parsl_parameters": {
-    "job_name": "enformer_predict_some_genes",
+    "job_name": "enformer_predict_regions_personalized",
     "num_of_full_nodes": 1,
     "walltime": "00:30:00",
     "init_blocks":1,
@@ -68,7 +69,7 @@
     "queue": "preemptable",
     "account": "TFXcan",
     "hpc": "polaris",
-    "provider": "highthroughput",
-    "worker_init":"conda activate /lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools/lib"
+    "provider": "local",
+    "worker_init":"source ~/.bashrc; conda activate /lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools/lib"
   }
 }

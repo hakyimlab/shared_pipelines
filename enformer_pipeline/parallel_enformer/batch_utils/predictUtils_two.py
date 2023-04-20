@@ -88,12 +88,12 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
     if (not batch_regions) or (batch_regions is None):
         raise Exception(f'[INFO] There are no regions in this batch {batch_num}.')
 
-    print(f'batch_regions are: {batch_regions}')
-    # print(f'samples are: {samples}')
-    # print(f'path_to_vcf are: {path_to_vcf}')
-    print(f'output_dir are: {output_dir}')
-    print(f'prediction_logfiles_folder are: {prediction_logfiles_folder}')
-    print(f'sequence_source are: {sequence_source}')
+    # print(f'batch_regions are: {batch_regions}')
+    # # print(f'samples are: {samples}')
+    # # print(f'path_to_vcf are: {path_to_vcf}')
+    # print(f'output_dir are: {output_dir}')
+    # print(f'prediction_logfiles_folder are: {prediction_logfiles_folder}')
+    # print(f'sequence_source are: {sequence_source}')
 
     #print(f'GPU Memory at start of batch {batch_num} predict function is {loggerUtils.get_gpu_memory()}')
 
@@ -172,7 +172,7 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                         #print(sample_predictions[hap])
 
                         if sample_predictions[hap].shape != predictions_expected_shape:
-                            print(sample_predictions[hap])
+                            #print(sample_predictions[hap])
                             raise Exception(f'ERROR - {sample}\'s {hap} predictions shape is {sample_predictions[hap].shape} and is not equal to expected shape {predictions_expected_shape}.')
                         else:
                             print(f'Sample {sample} {input_region} {hap} predictions are of the correct shape:  {sample_predictions[hap].shape}')
@@ -218,7 +218,6 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
         return(logger_output)
     
     except (TypeError, AttributeError) as tfe:
-        print("Except")
         if write_log['logtypes']['error']:
             if tf.config.list_physical_devices('GPU'):
                 mem_use = loggerUtils.get_gpu_memory()

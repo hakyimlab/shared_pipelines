@@ -42,17 +42,30 @@ def collect_bins_and_tracks(predictions, bins_indices, tracks_indices):
     # print(type(predictions))
     # print(type(bins_indices))
     # print(type(tracks_indices))
-    
-    if bins_indices is None:
-        if tracks_indices is None:
-            return(predictions[:, :])
-        else:
-            return(predictions[:, tracks_indices])
+
+    if bins_indices is not None and tracks_indices is not None:
+        return(predictions[bins_indices, :][:, tracks_indices])
     else:
-        if tracks_indices is None:
-            return(predictions[bins_indices, :])
+        if bins_indices is None:
+            if tracks_indices is None:
+                return(predictions[:, :])
+            else:
+                return(predictions[:, tracks_indices])
         else:
-            return(predictions.ix_(bins_indices, tracks_indices))
+            if tracks_indices is None:
+                return(predictions[bins_indices, :])
+    
+    # if bins_indices is None:
+    #     if tracks_indices is None:
+    #         return(predictions[:, :])
+    #     else:
+    #         return(predictions[:, tracks_indices])
+    # else:
+    #     if tracks_indices is None:
+    #         return(predictions[bins_indices, :])
+    #     else:
+    #         print(predictions.ix_(bins_indices, tracks_indices))
+    #         return(predictions.ix_(bins_indices, tracks_indices))
         
 
 
