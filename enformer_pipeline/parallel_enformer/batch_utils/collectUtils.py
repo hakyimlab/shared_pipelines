@@ -34,17 +34,25 @@ def parse_bins_and_tracks(unparsed_bins, unparsed_tracks):
     return bins_indices,tracks_indices
 
 def collect_bins_and_tracks(predictions, bins_indices, tracks_indices):
+
+    # print(predictions.shape)
+    # print(bins_indices)
+    # print(tracks_indices)
+
+    # print(type(predictions))
+    # print(type(bins_indices))
+    # print(type(tracks_indices))
     
-    if bins_indices == None:
-        if tracks_indices == None:
+    if bins_indices is None:
+        if tracks_indices is None:
             return(predictions[:, :])
         else:
             return(predictions[:, tracks_indices])
     else:
-        if tracks_indices == None:
+        if tracks_indices is None:
             return(predictions[bins_indices, :])
         else:
-            return(predictions[bins_indices, tracks_indices])
+            return(predictions.ix_(bins_indices, tracks_indices))
         
 
 

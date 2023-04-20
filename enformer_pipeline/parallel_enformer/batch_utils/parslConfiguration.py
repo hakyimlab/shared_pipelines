@@ -41,7 +41,7 @@ def polaris_htParslConfig(params):
                 address=address_by_hostname(),
                 provider=PBSProProvider(
                     launcher=MpiExecLauncher(
-                        #bind_cmd="--cpu-bind", overrides="--depth=64 --ppn 1"
+                        bind_cmd="--cpu-bind", overrides="--depth=64 --ppn 1"
                     ),
                     account=user_opts['polaris']['account'],
                     queue=params['queue'], #preemptable',

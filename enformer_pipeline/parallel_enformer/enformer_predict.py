@@ -140,7 +140,7 @@ def main():
         os.makedirs(prediction_logfiles_folder)
         
     # list of intervals to be predicted on
-    a = pd.read_table(interval_list_file, sep=' ', header=None).dropna(axis=0) #.drop_duplicates(subset=['motif', 'sample', 'status', 'sequence_source'], keep='last')
+    a = pd.read_table(interval_list_file, sep=' ', header=None).dropna(axis=0) #.drop_duplicates(subset=['region', 'sample', 'status', 'sequence_source'], keep='last')
     list_of_regions = a[0].tolist()[0:(n_regions)] # a list of queries
     print(f'INFO - Found {len(list_of_regions)} regions to be split into batches with at most {batch_regions} regions in each batch.')
 
@@ -153,7 +153,7 @@ def main():
         # seach for the invalid_regions.csv file
         exclude_file = os.path.join(job_log_dir, 'invalid_queries.csv')
         if os.path.isfile(exclude_file):
-            exclude_these_regions = pd.read_csv(exclude_file)['motif'].tolist()
+            exclude_these_regions = pd.read_csv(exclude_file)['region'].tolist()
             print(f'INFO - Found regions to be excluded from the input regions.')
             list_of_regions = [l for l in list_of_regions if l not in exclude_these_regions]  
             print(f'INFO - Updated number of regions to predict on is {len(list_of_regions)}')
@@ -190,7 +190,7 @@ def main():
                 chr_vcf_file = None
 
             if not chr_list_of_regions:
-                print(f'WARNING - {chromosome} motif sites are not available.')
+                print(f'WARNING - {chromosome} sites are not available.')
                 continue
 
             # I want many regions to be put in a parsl app
@@ -241,7 +241,7 @@ def main():
 
     # remove temporatry config file
     print(f"INFO - Removing temporary config file at {os.path.join(batch_utils_path, 'tmp_config.json')}")
-    os.remove(os.path.join(batch_utils_path, 'config.json'))
+    os.remove(os.path.join(batch_utils_path, 'tmp_config.json'))
               
 if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
     #check_input_parameters.check_inputs(args.param_config)
@@ -266,15 +266,15 @@ if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
 
 #         db_parsl = []
 #         for each_id in id_list:
-#             motifs_list = finished_predictions.loc[finished_predictions['individual'] == each_id, ].motif.values.tolist()
-#             motifs_list = list(set(motifs_list))
+#             regions_list = finished_predictions.loc[finished_predictions['individual'] == each_id, ].region.values.tolist()
+#             regions_list = list(set(regions_list))
 
-#             print(f'[INFO] Creating HDF5 database for {each_id} for {len(motifs_list)} predictions.')
+#             print(f'[INFO] Creating HDF5 database for {each_id} for {len(regions_list)} predictions.')
 
-#             motifs_list_paths = [f'{output_dir}/{each_id}/{i}_predictions.h5' for i in motifs_list]
+#             regions_list_paths = [f'{output_dir}/{each_id}/{i}_predictions.h5' for i in regions_list]
 #             csv_file = f'{output_dir}/{each_id}_{prediction_id}_predictions.csv'
 #             h5_file = f'{output_dir}/{each_id}_{prediction_id}_predictions.hdf5'
-#             db_parsl.append(make_db(h5_file = h5_file, csv_file = csv_file, files_list = motifs_list, files_path = motifs_list_paths, dataset = each_id))
+#             db_parsl.append(make_db(h5_file = h5_file, csv_file = csv_file, files_list = regions_list, files_path = regions_list_paths, dataset = each_id))
 
         
 #         print(db_parsl)
@@ -350,7 +350,7 @@ if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
     #             chr_vcf_file = None
 
     #         if not chr_list_of_regions:
-    #             print(f'[WARNING] {chromosome} motif sites are not available.')
+    #             print(f'[WARNING] {chromosome} region sites are not available.')
     #             continue
 
     #         region_batches = generate_n_batches(chr_list_of_regions, batch_n=batch_regions) # batch_regions total batches
