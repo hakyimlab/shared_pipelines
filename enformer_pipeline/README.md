@@ -27,9 +27,9 @@ This environment contains all the software needed to run the pipeline; and you s
 Instructions are below.
 
 ### 6. Run the pipeline
-After editing your `config.json` file , simply call: [`python3 ./parallel_enformer/enformer_predict`](./parallel_enformer/enformer_predict.py) --param_config `{path to config.json file}`
+After editing your `config.json` file , simply call: [`python3 ./scripts/enformer_predict`](./parallel_enformer/enformer_predict.py) --param_config `{full path to config.json file}`
 
-An example of a config.json file is [here](./config_files/config.json). Instructions for the config.json file are below. Template files for individuals and regions are [here](./metadata/)
+An example of a config.json file is [here](./config_files). You should choose one depending on if you want to predict on the reference genome or on personalized genomes, and on what cluster you are on. Instructions for the config.json file are below. Template files for individuals and regions are [here](./metadata/). 
 
 
 ## Options
