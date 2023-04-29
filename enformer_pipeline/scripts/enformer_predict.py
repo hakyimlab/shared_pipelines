@@ -8,11 +8,10 @@ import time
 import parsl
 from datetime import date
 import argparse
-import pathlib
 
 # needed arguments 
 parser = argparse.ArgumentParser()
-parser.add_argument("--param_config", help="Path to JSON file of parameters and directives to be used by ENFORMER", type=str)
+parser.add_argument("--parameters", help="Path to JSON file of parameters and directives to be used by ENFORMER", type=str, required=True)
 args = parser.parse_args()
 
 # some locations and folders
@@ -27,10 +26,13 @@ import directives
 # main 
 def main():
 
-    params_path = args.param_config
+    params_path = args.parameters
 
     if not os.path.isabs(params_path):
         params_path = os.path.abspath(params_path)
+
+    # I need predict_utils_two.py downstream and and it is quite tricky to use with parsl
+    p_two = os.path.join(script_path, 'modules', 'predictUtils_two.py')
 
     with open(f'{params_path}') as f:
         parameters = json.load(f)
@@ -90,10 +92,11 @@ def main():
         if reverse_complement:
             print(f'INFO - Predicting on reverse complements too')
 
-    # write the params_path to a config.json file in a predefined folder
-    tmp_config_data = {'params_path': params_path}
-    with open(os.path.join(batch_utils_path, 'tmp_config.json'), mode='w') as cj:
-        json.dump(tmp_config_data, cj)
+    # # write the params_path to a config.json file in a predefined folder
+    # tmp_config_data = {'params_path': params_path}
+    # tmp_config_file = os.path.join(batch_utils_path, f'tmp_config_{prediction_data_name}_{prediction_id}.json')
+    # with open(tmp_config_file, mode='w') as cj:
+    #     json.dump(tmp_config_data, cj)
 
     # modify parsl parameters to add the working directory
     parsl_parameters['working_dir'] = project_dir
@@ -203,7 +206,7 @@ def main():
             for region_list in region_batches:
                 #print(len(sample_list))
                 #print(f'{len(region_list)} regions in {chromosome} for {len(sample_list)} samples')
-                sample_app_futures.append(prediction_fxn(batch_regions=list(region_list), samples=list(sample_list), path_to_vcf = chr_vcf_file, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source))   
+                sample_app_futures.append(prediction_fxn(batch_regions=list(region_list), samples=list(sample_list), path_to_vcf = chr_vcf_file, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source, tmp_config_path=params_path, p_two=p_two))   
 
                 count = count + 1 
 
@@ -240,8 +243,8 @@ def main():
         json.dump(agg_dt, wj)
 
     # remove temporatry config file
-    print(f"INFO - Cleaning up: Removing temporary config file at {os.path.join(batch_utils_path, 'tmp_config.json')}")
-    os.remove(os.path.join(batch_utils_path, 'tmp_config.json'))
+    # print(f"INFO - Cleaning up: Removing temporary config file at {tmp_config_file}")
+    # os.remove(tmp_config_file)
               
 if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
     #check_input_parameters.check_inputs(args.param_config)

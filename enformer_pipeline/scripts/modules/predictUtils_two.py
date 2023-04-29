@@ -18,11 +18,9 @@ whereis_script = os.path.dirname(__file__) #os.path.dirname(sys.argv[0]) # or os
 #if __name__ == '__main__':
 if __name__ == 'predictUtils_two':
 
-    with open(f'{whereis_script}/tmp_config.json') as f:
-        parameters = json.load(f)
-        parameters_file = parameters['params_path']
+    print(f'Using this config file: {tmp_config_path}')
     
-    with open(f'{parameters_file}') as f:
+    with open(f'{tmp_config_path}') as f:
         parameters = json.load(f)
 
         prediction_data_name = parameters['prediction_data_name']

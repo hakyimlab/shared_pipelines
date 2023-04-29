@@ -8,6 +8,7 @@
   "date": null,
   "create_hdf5_file": false,
   "exclude_regions": true,
+  "reverse_complement": false,
   "batch_individuals": 3,
   "vcf_files": {
     "folder": "/project2/haky/Data/GEUVADIS/vcf_snps_only",
@@ -67,6 +68,7 @@
     "max_num_blocks": 4,
     "queue": "",
     "hpc": "beagle3",
+    "account":"pi-haky",
     "provider": "highthroughput",
     "worker_init":"conda activate /beagle3/haky/users/shared_software/dl-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/beagle3/haky/users/shared_software/dl-tools/lib"
   }

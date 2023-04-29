@@ -4,7 +4,7 @@
 
 
 #@python_app
-def run_batch_predictions(batch_regions, samples, path_to_vcf, batch_num, script_path, output_dir, prediction_logfiles_folder, sequence_source): #
+def run_batch_predictions(batch_regions, samples, path_to_vcf, batch_num, script_path, output_dir, prediction_logfiles_folder, sequence_source, tmp_config_path = None, p_two=None): #
     """
     Predict and save on a given batch of regions in the genome
 
@@ -32,16 +32,26 @@ def run_batch_predictions(batch_regions, samples, path_to_vcf, batch_num, script
         Check the call logs or stacks for the source of the error. 
     """
 
-    import sys, os, faulthandler, time, itertools
+    import sys, os, faulthandler, time, importlib
 
     mpath = os.path.join(script_path, 'modules') #os.path.dirname(__file__) #
     sys.path.append(mpath)
     
     faulthandler.enable() # to figure out where segmentation error is coming from
 
+    # I want to import predictUtils_two but I need it to be dynamic and imported with the path to the config file
     try:
+        if p_two is not None:
+            spec = importlib.util.spec_from_file_location("predictUtils_two", p_two)
+        else:
+            raise Exception('p_two is None')
+
+        predictUtils_two = importlib.util.module_from_spec(spec)
+        predictUtils_two.tmp_config_path = tmp_config_path
+        spec.loader.exec_module(predictUtils_two)
+
         import checksUtils
-        import predictUtils_two
+        #import predictUtils_two
     except ModuleNotFoundError as merr:
         raise Exception(f'[ERROR] {type(merr).__name__} at run_batch_predictions. Cannot locate either of `checkUtils` or `predictUtils_two` modules.')
 

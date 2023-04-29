@@ -32,7 +32,7 @@ Instructions are below.
 ### 6. Run the pipeline
 There are two ways to do this (for now, #1 is recommended):
 
-1. After editing your `config.json` file , simply call: [`python3 ./scripts/enformer_predict.py`](./scripts/enformer_predict.py) --param_config `{path to config.json file}`. **Make sure that the `provider` option is set to 'highthroughput" in the config file.**
+1. After editing your `config.json` file , simply call: [`python3 ./scripts/enformer_predict.py`](./scripts/enformer_predict.py) --parameters `{path to config.json file}`. **Make sure that the `provider` option is set to 'highthroughput" in the config file.**
 
 2. Edit the [`enformer_predict.sh`](./scripts/enformer_predict.sh) file to include the path to your config.json file and then call: [`qsub ./enformer_predict.sh`](./scripts/enformer_predict.sh). **Make sure that the `provider` option is set to 'local" in the config file.** 
 
@@ -102,3 +102,10 @@ An example of a config.json file is [here](./config_files). You should choose on
 - [X] Change "motif" to "region" in the predictions_log files names
 - [X] Pipeline should be able to predict on reverse complements
 - [X] Create config templates for different servers (beagle3, polaris, theta e.t.c.)
+
+
+## Updates
+
+#### Sat Apr 19 2023
+- [X] Changed argument passed to `enformer_predict.py` from `--param_config` to `--parameters` to make it more understandable.
+- [X] Removed the need to create a temporary config when predicting. Now, the config file is passed as a parameter to the necessary modules.
