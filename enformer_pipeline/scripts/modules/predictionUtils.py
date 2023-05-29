@@ -5,7 +5,7 @@
 import functools
 
 @functools.lru_cache(5)
-def get_model(model_path):
+def get_model(model_path, dl_package='tensorflow'):
     """
     Return a tensorflow model
 
@@ -15,10 +15,19 @@ def get_model(model_path):
     Returns: 
         a tensorflow model
     """
-    import tensorflow as tf
-    return tf.saved_model.load(model_path).model
 
-def enformer_predict_on_sequence(model, sample_input):
+    if dl_package == 'tensorflow':
+        import tensorflow as tf
+        return tf.saved_model.load(model_path).model
+    elif dl_package == 'pytorch':
+        import torch
+        import enformer_pytorch
+        model = enformer_pytorch.Enformer().to("cuda")
+        model.load_state_dict(torch.load(model_path))
+        model.eval()
+        return model
+
+def enformer_predict_on_sequence(model, sample_input, dl_package='tensorflow'):
     """
     given a compatible sequence that has been one-hot encoded, predict on ENFORMER
 
@@ -36,7 +45,14 @@ def enformer_predict_on_sequence(model, sample_input):
         if not sequence_encoding.shape == (1, 393216, 4):
             raise Exception(f'[ERROR] Fatal. Input sequence shape is not appropriate')
         # prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()[: , range(448 - 8, (448 + 8 + 1)), : ]
-        prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()
+
+        if dl_package == 'tensorflow':
+            import tensorflow as tf
+            prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()
+        elif dl_package == 'pytorch':
+            import torch
+            prediction_raw = model(torch.tensor(sequence_encoding).to("cuda"))
+            prediction = prediction_raw['human'].cpu().detach().numpy()
 
         prediction_output[haplotype] = prediction
         

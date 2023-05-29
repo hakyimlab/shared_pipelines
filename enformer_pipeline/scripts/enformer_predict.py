@@ -58,6 +58,7 @@ def main():
         sequence_source = parameters['sequence_source']
         exclude_regions = parameters["exclude_regions"]
         reverse_complement = parameters["reverse_complement"]
+        dl_package = parameters["dl_package"]
     
         metadata_dir = parameters['metadata_dir']
         if not os.path.isdir(metadata_dir):
@@ -206,7 +207,7 @@ def main():
             for region_list in region_batches:
                 #print(len(sample_list))
                 #print(f'{len(region_list)} regions in {chromosome} for {len(sample_list)} samples')
-                sample_app_futures.append(prediction_fxn(batch_regions=list(region_list), samples=list(sample_list), path_to_vcf = chr_vcf_file, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source, tmp_config_path=params_path, p_two=p_two))   
+                sample_app_futures.append(prediction_fxn(batch_regions=list(region_list), samples=list(sample_list), path_to_vcf = chr_vcf_file, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source, tmp_config_path=params_path, p_two=p_two, dl_package=dl_package))   
 
                 count = count + 1 
 
