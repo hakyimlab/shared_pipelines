@@ -181,6 +181,7 @@ def main():
         sample_batches = [id_list] # put the list in a list
         print(f'INFO - There seem to be just one sample i.e. {sample_batches}. No need to batch.')
 
+
     # to make this fast, pass multiple regions to one parsl app
     sample_app_futures = []
     for sample_list in sample_batches:
