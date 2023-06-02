@@ -68,7 +68,7 @@
     "max_num_blocks": 4,
     "queue": "full-node",
     "hpc": "theta",
-    "provider": "highthroughput",
+    "provider": "local",
     "worker_init":"source ~/.bashrc; conda activate dl-tools; which python; export LD_LIBRARY_PATH=/home/temi/miniconda3/envs/dl-tools/lib:$LD_LIBRARY_PATH"
   }
 }
