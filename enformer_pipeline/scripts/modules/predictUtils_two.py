@@ -13,9 +13,9 @@ global module_path, write_log, sequence_source, grow_memory
 
 # read in the config_file
 whereis_script = os.path.dirname(__file__) #os.path.dirname(sys.argv[0]) # or os.path.dirname(__file__)
-module_path = os.path.abspath(whereis_script)
-tmp_config_path = "/grand/gpu_hack/imlab/users/saideep/test_inference/config.json"
-# if __name__ == '__main__':
+#module_path = os.path.abspath(whereis_script)
+
+#if __name__ == '__main__':
 if __name__ == 'predictUtils_two':
 
     print(f'Using this config file: {tmp_config_path}')
@@ -41,43 +41,43 @@ if __name__ == 'predictUtils_two':
         tracks_indices_raw = parameters['tracks_to_save']
         reverse_complement = parameters["reverse_complement"]
 
-# if any([write_log['logtypes'][ltype] for ltype in ['memory', 'error', 'time', 'cache']]):
-#     write_log['logdir'] = os.path.join(project_dir, write_logdir)
-# else:
-#     write_log['logdir'] = os.path.join(project_dir, write_logdir)
+if any([write_log['logtypes'][ltype] for ltype in ['memory', 'error', 'time', 'cache']]):
+    write_log['logdir'] = os.path.join(project_dir, write_logdir)
+else:
+    write_log['logdir'] = os.path.join(project_dir, write_logdir)
 
-import checksUtils
+#import checksUtils
 import loggerUtils
 import sequencesUtils
 import predictionUtils
 import checksUtils
 import collectUtils
 
-# global enformer_model
-# global fasta_extractor
-# global predictions_expected_shape
+global enformer_model
+global fasta_extractor
+global predictions_expected_shape
 
-# #enformer_model = predictionUtils.get_model(model_path)
+#enformer_model = predictionUtils.get_model(model_path)
 grow_memory = True
-# #print(f'GPU Memory before calling batch predict function is {loggerUtils.get_gpu_memory()}')
+#print(f'GPU Memory before calling batch predict function is {loggerUtils.get_gpu_memory()}')
 
-# bins_indices, tracks_indices = collectUtils.parse_bins_and_tracks(bins_indices_raw,tracks_indices_raw)
+bins_indices, tracks_indices = collectUtils.parse_bins_and_tracks(bins_indices_raw,tracks_indices_raw)
 
-# # Check prediction size for correctness
-# if bins_indices == None:
-#     if tracks_indices == None:
-#         predictions_expected_shape = (896,5313)
-#     else:
-#         predictions_expected_shape = (896,len(tracks_indices))
-# else:
-#     if tracks_indices == None:
-#         predictions_expected_shape = (len(bins_indices), 5313)
-#     else:
-#         predictions_expected_shape = (len(bins_indices),len(tracks_indices))
+# Check prediction size for correctness
+if bins_indices == None:
+    if tracks_indices == None:
+        predictions_expected_shape = (896,5313)
+    else:
+        predictions_expected_shape = (896,len(tracks_indices))
+else:
+    if tracks_indices == None:
+        predictions_expected_shape = (len(bins_indices), 5313)
+    else:
+        predictions_expected_shape = (len(bins_indices),len(tracks_indices))
 
 #print(bins_indices,tracks_indices)
 
-def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, batch_num, output_dir, prediction_logfiles_folder, sequence_source, dl_package="tensorflow"):
+def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, batch_num, output_dir, prediction_logfiles_folder, sequence_source):
 
     # this could mean
     # - check_queries returned nothing because
@@ -108,8 +108,8 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
     try:
         #model = predictionUtils.get_model(model_path)
         #model = enformer_model # check global definitions
-        enformer_model = predictionUtils.get_model(model_path, dl_package = dl_package)
-        fasta_extractor = sequencesUtils.get_fastaExtractor(fasta_file, dl_package = dl_package)
+        enformer_model = predictionUtils.get_model(model_path)
+        fasta_extractor = sequencesUtils.get_fastaExtractor(fasta_file)
 
         #print('Fasta and model successfully loaded')
         logger_output = []
