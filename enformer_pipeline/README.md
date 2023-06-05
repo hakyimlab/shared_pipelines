@@ -109,3 +109,6 @@ An example of a config.json file is [here](./config_files). You should choose on
 #### Sat Apr 19 2023
 - [X] Changed argument passed to `enformer_predict.py` from `--param_config` to `--parameters` to make it more understandable.
 - [X] Removed the need to create a temporary config when predicting. Now, the config file is passed as a parameter to the necessary modules.
+
+#### Mon Jun 5 2023
+- [X] Added a new function to separate successful from unsuccessful predictions. This is to allow for re-running of unsuccessful predictions.

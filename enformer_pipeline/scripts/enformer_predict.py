@@ -2,7 +2,7 @@
 # Author: Temi
 # Date: Wed 25 Jan 2023
 
-import os, sys, json
+import os, sys, json, re
 import pandas as pd # for manipulating dataframes
 import time
 import parsl
@@ -233,7 +233,30 @@ def main():
     #summary_exec = list(set(summary_exec))
     for i, qr in enumerate(summary_exec):
         loggerUtils.write_logger(log_msg_type=qr['logtype'], logfile=SUMMARY_FILE, message=qr['logmessage'])
+
+    # regex the summary file and save the failed ones e.t.c to csv
+    # --- there is a better way to do this but for now, this will do
+
+    warning_pattern = r"^\[WARNING.*For\s(\w+|\d+).*"
+    success_pattern = r"^\[INFO.*For\s(\w+|\d+).*"
+    with open(SUMMARY_FILE, 'r') as f:
+        lines = list(set(f.readlines()))
+    # print(line)
+    warning_result = [re.search(warning_pattern, l).group(1) for l in lines if not re.search(warning_pattern, l) is None]
+    success_result = [re.search(success_pattern, l).group(1) for l in lines if not re.search(success_pattern, l) is None]
+
+    pd.DataFrame(list(set(warning_result))).to_csv(os.path.join(metadata_dir, f'{prediction_data_name}_{prediction_id}_{run_date}.unsuccessful_predictions.csv'), index=False, header=False)
+
+    pd.DataFrame(list(set(success_result))).to_csv(os.path.join(metadata_dir, f'{prediction_data_name}_{prediction_id}_{run_date}.successful_predictions.csv'), index=False, header=False)
+
+    # collect the successfule predictions
+    # successful_predictions = list(set([q['sample'] for q in summary_exec if q['logtype'] == 'INFO']))
+    # unsuccessful_predictions = list(set([q['sample'] for q in summary_exec if q['logtype'] == 'WARNING']))
+    # pd.DataFrame({'successful_predictions':successful_predictions}).to_csv(os.path.join(metadata_dir, f'{prediction_data_name}_{prediction_id}_{run_date}.successful_predictions.csv'), index=False, header=False)
+    # pd.DataFrame({'unsuccessful_predictions':unsuccessful_predictions}).to_csv(os.path.join(metadata_dir, f'{prediction_data_name}_{prediction_id}_{run_date}.unsuccessful_predictions.csv'), index=False, header=False)
+
     print(f'INFO - Check {SUMMARY_FILE} for a summary of the entire run.')
+    print(f'INFO - Check `{metadata_dir}` for successful and unsucessful predictions.')
 
     # == After predictions are complete, a json file will be written out to help with aggregation
     print(f'INFO - Writing `aggregation_config_{prediction_data_name}_{prediction_id}.json` file to {metadata_dir}')

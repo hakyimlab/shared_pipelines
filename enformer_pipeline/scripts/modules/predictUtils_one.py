@@ -227,10 +227,10 @@ def check_predictions_and_logs(sample, predictions_folder, log_folder, interval_
 
     if all(queries_condition):
         message = f'SUCCESS - For {sample}, all predictions match all logged queries in the interval list files minus excluded regions, if any.'
-        return({'logtype': 'info', 'logmessage':message})
+        return({'logtype': 'info', 'logmessage':message, 'sample':sample})
     else:
         message = f'WARNING - For {sample}, either all predictions don\'t match all logged queries in the interval list files minus excluded regions or vice versa. This can happen if you have supplied a list of intervals but have chosen to predict on a subset. If this is the case, this behavior is normal. If you are unsure, please re-run the enformer prediction pipeline with the same parameters. You may supply a csv file of regions to exclude if available, but this should not matter.'
-        return({'logtype': 'warning', 'logmessage':message})
+        return({'logtype': 'warning', 'logmessage':message, 'sample':sample})
 
 def return_check_function(use_parsl, fxn=check_predictions_and_logs):
     '''
