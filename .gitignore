@@ -1,4 +1,6 @@
 
 enformer_pipeline/enformer_test
+enformer_pipeline_aggregate/enformer_test
 enformer_pipeline/.local*
+enformer_pipeline_aggregate/.local*
 **/__pycache__/
