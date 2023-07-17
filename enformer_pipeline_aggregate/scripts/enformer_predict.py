@@ -280,3 +280,43 @@ if (__name__ == '__main__') or (__name__ == 'enformer_predict'):
 
     job_runtime = job_end - job_start
     print(f'INFO - Completed job in {job_runtime} seconds.')
+
+
+
+
+
+# def slice_bins(locus, bin_size=128, nbins=896):
+#     import math
+#     locus = locus.split('_')
+#     start = int(locus[1])
+#     end = int(locus[2])
+#     midn = math.ceil((start + end) / 2)
+#     print(f'Middle locations is: {midn}')
+#     nstart = midn - 57344 # (128*896) / 2
+#     #print(f'New start is: {nstart}')
+#     nend = midn + (57344 - 1)
+#     #print(f'New end is: {nend}')
+#     cnt_start = nstart
+#     slice_start = 0
+#     while cnt_start <= start:
+#         cnt_start += bin_size
+#         slice_start += 1
+#     cnt_start = nstart
+#     slice_end = 0
+#     while cnt_start <= end:
+#         cnt_start += bin_size
+#         slice_end += 1
+#     return(slice_start, slice_end)
+
+#     # if start % 128 != 0:
+#     #     slice_start = math.ceil(start // 128)
+#     # else: 
+#     #     slice_start = math.floor(start // 128)
+#     # return(slice_start)
+
+# a = 'chr2_223164458_223164688'
+# sum_bins(a)
+
+# 'chr6_86160197_86176777'             
+# 'chr2_223164458_223164688'
+
