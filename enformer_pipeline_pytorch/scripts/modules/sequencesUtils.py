@@ -390,7 +390,7 @@ def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, ha
             #     print(err_msg)
             return(None)
         else:
-            if sequence_source == 'reference':
+            if sequence_source.startswith('reference'):
                 if (write_log is not None) and (write_log['logtypes']['time']):
                     toc = time.perf_counter()
                     time_used = toc - tic
@@ -399,7 +399,7 @@ def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, ha
                     loggerUtils.write_logger(log_msg_type = 'time', logfile = TIME_USAGE_FILE, message = time_msg)
 
                 return({'sequence': {'haplotype0': reference_sequence['sequence']}, 'metadata': {'sequence_source':'ref', 'region':query_region}})
-            elif sequence_source == 'personalized':
+            elif sequence_source.startswith('personalized'):
                 # which vcf file
                 vcf_chr = cyvcf2.cyvcf2.VCF(path_to_vcf, samples=samples)
                 samples_variants = find_variants_in_vcf_file(cyvcf2_object=vcf_chr, interval_object=reference_sequence['interval_object'], samples=samples)

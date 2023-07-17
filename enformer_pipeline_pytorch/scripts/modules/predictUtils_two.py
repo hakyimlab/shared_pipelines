@@ -61,24 +61,25 @@ import collectUtils
 grow_memory = True
 # #print(f'GPU Memory before calling batch predict function is {loggerUtils.get_gpu_memory()}')
 
-# bins_indices, tracks_indices = collectUtils.parse_bins_and_tracks(bins_indices_raw,tracks_indices_raw)
+bins_indices, tracks_indices = collectUtils.parse_bins_and_tracks(bins_indices_raw,tracks_indices_raw)
 
-# # Check prediction size for correctness
-# if bins_indices == None:
-#     if tracks_indices == None:
-#         predictions_expected_shape = (896,5313)
-#     else:
-#         predictions_expected_shape = (896,len(tracks_indices))
-# else:
-#     if tracks_indices == None:
-#         predictions_expected_shape = (len(bins_indices), 5313)
-#     else:
-#         predictions_expected_shape = (len(bins_indices),len(tracks_indices))
+# Check prediction size for correctness
+if bins_indices == None:
+    if tracks_indices == None:
+        predictions_expected_shape = (896,5313)
+    else:
+        predictions_expected_shape = (896,len(tracks_indices))
+else:
+    if tracks_indices == None:
+        predictions_expected_shape = (len(bins_indices), 5313)
+    else:
+        predictions_expected_shape = (len(bins_indices),len(tracks_indices))
 
 #print(bins_indices,tracks_indices)
 
 def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, batch_num, output_dir, prediction_logfiles_folder, sequence_source, dl_package="tensorflow"):
 
+    print(f'batch_regions are: {batch_regions}')
     # this could mean
     # - check_queries returned nothing because
         # - nothing should be returned - good ; and it should return none
@@ -105,125 +106,133 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
             except RuntimeError as e:
                 raise Exception(f'[RUNTIME ERROR] Batch number: {batch_num} of {type(e)} in module {__name__}')
 
-    try:
-        #model = predictionUtils.get_model(model_path)
-        #model = enformer_model # check global definitions
-        enformer_model = predictionUtils.get_model(model_path, dl_package = dl_package)
-        fasta_extractor = sequencesUtils.get_fastaExtractor(fasta_file, dl_package = dl_package)
+# try:
+    #model = predictionUtils.get_model(model_path)
+    #model = enformer_model # check global definitions
+    enformer_model = predictionUtils.get_model(model_path, dl_package = dl_package)
+    fasta_extractor = sequencesUtils.get_fastaExtractor(fasta_file)
 
-        #print('Fasta and model successfully loaded')
-        logger_output = []
-        dlist = {sample: [elem['query'] for elem in logging_dictionary[sample]] for sample in logging_dictionary.keys()}
+    #print('Fasta and model successfully loaded')
+    logger_output = []
+    dlist = {sample: [elem['query'] for elem in logging_dictionary[sample]] for sample in logging_dictionary.keys()}
 
-        for input_region in batch_regions: # input_region is chr1_10_20
-            #print(input_region)
-            # filter the samples
-            v_samples = checksUtils.return_samples_to_predict_on(query=input_region, logging_list_per_sample=dlist)
+    for input_region in batch_regions: # input_region is chr1_10_20
+        #print(input_region)
+        # filter the samples
+        v_samples = checksUtils.return_samples_to_predict_on(query=input_region, logging_list_per_sample=dlist)
 
-            #print(f'Creating sequences for {input_region}')
-            tic = time.perf_counter()
+        #print(f'Creating sequences for {input_region}')
+        tic = time.perf_counter()
 
-            samples_enformer_inputs = sequencesUtils.create_input_for_enformer(query_region=input_region, samples=v_samples, path_to_vcf=path_to_vcf, fasta_func=fasta_extractor, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=write_log, sequence_source=sequence_source, reverse_complement=reverse_complement)
+        samples_enformer_inputs = sequencesUtils.create_input_for_enformer(query_region=input_region, samples=v_samples, path_to_vcf=path_to_vcf, fasta_func=fasta_extractor, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=write_log, sequence_source=sequence_source, reverse_complement=reverse_complement)
 
-            toc = time.perf_counter()
+        toc = time.perf_counter()
 
-            retrieve_time = (toc - tic)/len(v_samples) #len(list(samples_enformer_inputs['sequence'].keys()))
+        retrieve_time = (toc - tic)/len(v_samples) #len(list(samples_enformer_inputs['sequence'].keys()))
 
-            #print(f'Region {input_region} sequences successfully created')
+        #print(f'Region {input_region} sequences successfully created')
 
-            # check that all the samples are accounted for
-            #print(sorted(list(samples_enformer_inputs['sequence'].keys())))
-            if samples_enformer_inputs is None:
-                logger_output.append(2)
-                continue
+        # check that all the samples are accounted for
+        #print(sorted(list(samples_enformer_inputs['sequence'].keys())))
+        if samples_enformer_inputs is None:
+            logger_output.append(2)
+            continue
 
-            elif samples_enformer_inputs is not None:
+        elif samples_enformer_inputs is not None:
+            if samples_enformer_inputs['metadata']['sequence_source'] == 'var':
+                if sorted(v_samples) != sorted(list(samples_enformer_inputs['sequence'].keys())):
+                    missing_samples = [s for s in sorted(v_samples) if s not in sorted(list(samples_enformer_inputs['sequence'].keys()))]
+                    # remove missing samples from v_samples
+                    if missing_samples:
+                        print(f"WARNING - Removing {len(missing_samples)} missing samples from the input samples list.")
+                        v_samples = [s for s in v_samples if s not in missing_samples]
+                    print(f"[WARNING] Some samples cannot be found. But this job will continue")
+            #logging_info_list = [] # collect all logging information here
+            for sample in v_samples:
                 if samples_enformer_inputs['metadata']['sequence_source'] == 'var':
-                    if sorted(v_samples) != sorted(list(samples_enformer_inputs['sequence'].keys())):
-                        missing_samples = [s for s in sorted(v_samples) if s not in sorted(list(samples_enformer_inputs['sequence'].keys()))]
-                        # remove missing samples from v_samples
-                        if missing_samples:
-                            print(f"WARNING - Removing {len(missing_samples)} missing samples from the input samples list.")
-                            v_samples = [s for s in v_samples if s not in missing_samples]
-                        print(f"[WARNING] Some samples cannot be found. But this job will continue")
-                #logging_info_list = [] # collect all logging information here
-                for sample in v_samples:
-                    if samples_enformer_inputs['metadata']['sequence_source'] == 'var':
-                        tic = time.perf_counter()
+                    tic = time.perf_counter()
 
-                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample])
-                    elif samples_enformer_inputs['metadata']['sequence_source'] in ['ref', 'random']:
-                        tic = time.perf_counter()
+                    unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample], dl_package=dl_package)
+                elif samples_enformer_inputs['metadata']['sequence_source'] in ['ref', 'random']:
+                    tic = time.perf_counter()
 
-                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'])
-                    
-                    toc = time.perf_counter()
-                    predict_time = toc - tic
-                    
-                    # check that the predictions have the appropriate shapes
-                    sample_predictions = {}
-                    for hap in unfiltered_sample_predictions.keys():
-
-                        haplo_prediction_cur = np.squeeze(unfiltered_sample_predictions[hap], axis=0)
-                        #print(haplo_prediction_cur)
-                        sample_predictions[hap] = collectUtils.collect_bins_and_tracks(haplo_prediction_cur, bins_indices, tracks_indices)
-                        #print(sample_predictions[hap])
-
-                        if sample_predictions[hap].shape != predictions_expected_shape:
-                            #print(sample_predictions[hap])
-                            raise Exception(f'ERROR - {sample}\'s {hap} predictions shape is {sample_predictions[hap].shape} and is not equal to expected shape {predictions_expected_shape}.')
-                        else:
-                            print(f'Sample {sample} {input_region} {hap} predictions are of the correct shape:  {sample_predictions[hap].shape}')
-                        
-                    # otherwise, you can save the predictions ; prediction will be reshaped to (17, 5313) here
-                    sample_logging_info = loggerUtils.save_haplotypes_h5_prediction(haplotype_predictions=sample_predictions, metadata=samples_enformer_inputs['metadata'], output_dir=output_dir, sample=sample)
-
-                    print(f'Sample {sample} {input_region} haplotypes predictions have been saved.')
-
-                    # check logging info/dictionary for the sample and the region
-                    logging_type = checksUtils.return_sample_logging_type(sample=sample, query_region=input_region, logging_dictonary=logging_dictionary)
-                    #print(logging_type)
-
-                    if logging_type == 'y':
-                        if (sample_logging_info is not None) and (len(sample_logging_info) == 4):
-                            predictions_log_file = os.path.join(prediction_logfiles_folder, f'{sample}_log.csv')
-                            sample_logging_info.extend([predict_time, retrieve_time])
-                            logger_output.append(loggerUtils.log_predictions(predictions_log_file=predictions_log_file, what_to_write=sample_logging_info))
-                        print(f'Sample {sample} {input_region} haplotypes predictions have been logged.')
-                    elif logging_type == 'n':
-                        logger_output.append(1)
-                        continue
+                    unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'], dl_package=dl_package)
                 
-            if write_log['logtypes']['memory']:
-                mem_use = loggerUtils.get_gpu_memory() # [123, 456]#
-                msg_mem_log = f"[MEMORY] (GPU) at the end of batch {batch_num} prediction: free {mem_use[0]} mb, used {mem_use[1]} mb on " 
-                if tf.config.list_physical_devices('GPU'):
-                    MEMORY_LOG_FILE = os.path.join(write_log['logdir'], "memory_usage.log")
-                    loggerUtils.write_logger(log_msg_type = 'memory', logfile = MEMORY_LOG_FILE, message = msg_mem_log)
-            else:
-                mem_use = loggerUtils.get_gpu_memory() # [123, 456]#
-                msg_mem_log = f"[MEMORY] (GPU) at the end of batch {batch_num} prediction: free {mem_use[0]} mb, used {mem_use[1]} mb on " 
-                print(msg_mem_log)
+                toc = time.perf_counter()
+                predict_time = toc - tic
+                
 
-            if write_log['logtypes']['cache']:
-                msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
-                CACHE_LOG_FILE = os.path.join(write_log['logdir'], 'cache_usage.log')
-                loggerUtils.write_logger(log_msg_type = 'cache', logfile = CACHE_LOG_FILE, message = msg_cac_log)
-            else:
-                msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
-                print(msg_cac_log)
+                if sequence_source == 'personalized-mean':
+                    hap_seqs = []
+                    for hap in unfiltered_sample_predictions:
+                        hap_seqs.append(unfiltered_sample_predictions[hap])
+                    mean_pred = np.mean([unfiltered_sample_predictions["haplotype1"],unfiltered_sample_predictions["haplotype2"]], axis=0)
+                    unfiltered_sample_predictions = {}
+                    unfiltered_sample_predictions["mean"] = mean_pred
+                # check that the predictions have the appropriate shapes
+                sample_predictions = {}
+                for hap in unfiltered_sample_predictions.keys():
 
-        return(logger_output)
-    
-    except (TypeError, AttributeError) as tfe:
-        if write_log['logtypes']['error']:
+                    haplo_prediction_cur = np.squeeze(unfiltered_sample_predictions[hap], axis=0)
+                    #print(haplo_prediction_cur)
+                    sample_predictions[hap] = collectUtils.collect_bins_and_tracks(haplo_prediction_cur, bins_indices, tracks_indices)
+                    #print(sample_predictions[hap])
+
+                    # if sample_predictions[hap].shape != predictions_expected_shape:
+                    #     #print(sample_predictions[hap])
+                    #     raise Exception(f'ERROR - {sample}\'s {hap} predictions shape is {sample_predictions[hap].shape} and is not equal to expected shape {predictions_expected_shape}.')
+                    # else:
+                    #     print(f'Sample {sample} {input_region} {hap} predictions are of the correct shape:  {sample_predictions["haplotype1"].shape}')
+                    
+                # otherwise, you can save the predictions ; prediction will be reshaped to (17, 5313) here
+                sample_logging_info = loggerUtils.save_haplotypes_h5_prediction(haplotype_predictions=sample_predictions, metadata=samples_enformer_inputs['metadata'], output_dir=output_dir, sample=sample)
+
+                print(f'Sample {sample} {input_region} haplotypes predictions have been saved.')
+
+                # check logging info/dictionary for the sample and the region
+                logging_type = checksUtils.return_sample_logging_type(sample=sample, query_region=input_region, logging_dictonary=logging_dictionary)
+                #print(logging_type)
+
+                if logging_type == 'y':
+                    if (sample_logging_info is not None) and (len(sample_logging_info) == 4):
+                        predictions_log_file = os.path.join(prediction_logfiles_folder, f'{sample}_log.csv')
+                        sample_logging_info.extend([predict_time, retrieve_time])
+                        logger_output.append(loggerUtils.log_predictions(predictions_log_file=predictions_log_file, what_to_write=sample_logging_info))
+                    print(f'Sample {sample} {input_region} haplotypes predictions have been logged.')
+                elif logging_type == 'n':
+                    logger_output.append(1)
+                    continue
+            
+        if write_log['logtypes']['memory']:
+            mem_use = loggerUtils.get_gpu_memory() # [123, 456]#
+            msg_mem_log = f"[MEMORY] (GPU) at the end of batch {batch_num} prediction: free {mem_use[0]} mb, used {mem_use[1]} mb on " 
             if tf.config.list_physical_devices('GPU'):
-                mem_use = loggerUtils.get_gpu_memory()
-                err_mem_log = f"[ERROR] GPU memory error of type {type(tfe).__name__} for batch {batch_num}): free {mem_use[0]} mb, used {mem_use[1]} mb on {loggerUtils.get_gpu_name()}"
-                MEMORY_ERROR_FILE = os.path.join(write_log['logdir'], 'error_details.log')
-                loggerUtils.write_logger(log_msg_type = 'error', logfile = MEMORY_ERROR_FILE, message = err_mem_log)
+                MEMORY_LOG_FILE = os.path.join(write_log['logdir'], "memory_usage.log")
+                loggerUtils.write_logger(log_msg_type = 'memory', logfile = MEMORY_LOG_FILE, message = msg_mem_log)
         else:
-            raise Exception(f'[ERROR] of {type(tfe).__name__} at batch {batch_num}')
+            mem_use = loggerUtils.get_gpu_memory() # [123, 456]#
+            msg_mem_log = f"[MEMORY] (GPU) at the end of batch {batch_num} prediction: free {mem_use[0]} mb, used {mem_use[1]} mb on " 
+            print(msg_mem_log)
+
+        if write_log['logtypes']['cache']:
+            msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
+            CACHE_LOG_FILE = os.path.join(write_log['logdir'], 'cache_usage.log')
+            loggerUtils.write_logger(log_msg_type = 'cache', logfile = CACHE_LOG_FILE, message = msg_cac_log)
+        else:
+            msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
+            print(msg_cac_log)
+
+    return(logger_output)
+    
+    # except (TypeError, AttributeError) as tfe:
+    #     if write_log['logtypes']['error']:
+    #         if tf.config.list_physical_devices('GPU'):
+    #             mem_use = loggerUtils.get_gpu_memory()
+    #             err_mem_log = f"[ERROR] GPU memory error of type {type(tfe).__name__} for batch {batch_num}): free {mem_use[0]} mb, used {mem_use[1]} mb on {loggerUtils.get_gpu_name()}"
+    #             MEMORY_ERROR_FILE = os.path.join(write_log['logdir'], 'error_details.log')
+    #             loggerUtils.write_logger(log_msg_type = 'error', logfile = MEMORY_ERROR_FILE, message = err_mem_log)
+    #     else:
+    #         raise Exception(f'[ERROR] of {type(tfe).__name__} at batch {batch_num}')
 
 
 

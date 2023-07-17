@@ -22,9 +22,17 @@ def get_model(model_path, dl_package='tensorflow'):
     elif dl_package == 'pytorch':
         import torch
         import enformer_pytorch
-        model = enformer_pytorch.Enformer().to("cuda")
-        model.load_state_dict(torch.load(model_path))
-        model.eval()
+        device = torch.device("cpu")
+
+        stored_state = torch.load(model_path, map_location=device)
+
+        model = enformer_pytorch.Enformer()
+
+        # model.load_state_dict(stored_state["model_state_dict"])
+        model.load_state_dict(stored_state)
+
+        model.to('cuda')
+  
         return model
 
 def enformer_predict_on_sequence(model, sample_input, dl_package='tensorflow'):
@@ -53,6 +61,9 @@ def enformer_predict_on_sequence(model, sample_input, dl_package='tensorflow'):
             import torch
             prediction_raw = model(torch.tensor(sequence_encoding).to("cuda"))
             prediction = prediction_raw['human'].cpu().detach().numpy()
+            del prediction_raw
+            torch.cuda.empty_cache()
+            print("PREDICTION COMPLETE")
 
         prediction_output[haplotype] = prediction
         

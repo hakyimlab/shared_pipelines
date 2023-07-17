@@ -213,6 +213,9 @@ def check_predictions_and_logs(sample, predictions_folder, log_folder, interval_
         queries_saved_h1 = [str(f'{predictions_folder}/{sample}/haplotype1/{query}_predictions.h5') for query in queries]
         queries_saved_h2 = [str(f'{predictions_folder}/{sample}/haplotype2/{query}_predictions.h5') for query in queries]
         queries_saved = np.array([os.path.isfile(q) for q in queries_saved_h1]) * np.array([os.path.isfile(q) for q in queries_saved_h2])
+    if sequence_source == 'personalized-mean':
+        queries_saved = [str(f'{predictions_folder}/{sample}/mean_haplotype/{query}_predictions.h5') for query in queries]
+        queries_saved = np.array([os.path.isfile(q) for q in queries_saved])
     elif sequence_source == 'reference':
         queries_saved = [str(f'{predictions_folder}/{sample}/haplotype0/{query}_predictions.h5') for query in queries]
         queries_saved = np.array([os.path.isfile(q) for q in queries_saved])
