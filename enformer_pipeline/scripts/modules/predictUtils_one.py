@@ -103,9 +103,9 @@ def return_prediction_function(use_parsl, fxn=run_batch_predictions):
         The function if parsl is not used
         The parsl decorated function if parsl is meant to be used
     
-    '''
-    from parsl.app.app import python_app
+    ''' 
     if use_parsl == True:
+        from parsl.app.app import python_app
         return python_app(fxn)
     elif use_parsl == False:
         return fxn
