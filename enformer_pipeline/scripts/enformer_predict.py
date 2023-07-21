@@ -105,7 +105,8 @@ def main():
         os.makedirs(job_log_dir)
 
     # set parsl directives
-    directives.parsl_directives(use_parsl, parsl_parameters)
+    if use_parsl:
+        directives.parsl_directives(use_parsl, parsl_parameters)
     
     # importing this module does not work; best to execute it here
     predict_utils_one = os.path.join(script_path, 'modules', 'predictUtils_one.py')
