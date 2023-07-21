@@ -3,23 +3,60 @@ import logging
 
 # I think logger utils should check for write log directives and cache/save those
 
+#def get_gpu_name():
+#    import subprocess
+#    cmd = "cat $COBALT_NODEFILE"
+#    #cmd = "cat $PBS_NODEFILE"
+#    a = str(subprocess.run(cmd, shell=True, capture_output=True).stdout, encoding='utf-8').strip('\n')
+#    # cmd = "nvidia-smi -L" #"nvidia-smi --query-gpu=gpu_bus_id --format=csv"
+#    # b = str(subprocess.run(cmd, shell=True, capture_output=True).stdout, encoding='utf-8').strip('\n')
+#
+#    # return(f"{a}-{b}")
+#    return(a)
 def get_gpu_name():
     import subprocess
-    cmd = "cat $COBALT_NODEFILE"
-    #cmd = "cat $PBS_NODEFILE"
-    a = str(subprocess.run(cmd, shell=True, capture_output=True).stdout, encoding='utf-8').strip('\n')
-    # cmd = "nvidia-smi -L" #"nvidia-smi --query-gpu=gpu_bus_id --format=csv"
-    # b = str(subprocess.run(cmd, shell=True, capture_output=True).stdout, encoding='utf-8').strip('\n')
+    # cmd = "cat $COBALT_NODEFILE"
+    # Uncomment the line above if you want to read GPU information from $COBALT_NODEFILE
+    cmd = "nvidia-smi -L"  # Use this command to get GPU information using nvidia-smi
+    try:
+        output = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        gpu_info = output.stdout.strip()
 
-    # return(f"{a}-{b}")
-    return(a)
+        # If the command returns GPU information, return it
+        if gpu_info:
+            return gpu_info
 
+        # If the command does not return any GPU information,
+        # handle the case by returning a default value or None
+        return "No NVIDIA GPU found"  # You can modify the default value as needed
+    except FileNotFoundError:
+        # If 'nvidia-smi' is not found, handle the case gracefully
+        return "nvidia-smi not found, no NVIDIA GPU information available"
+
+
+
+
+#def get_gpu_memory():
+#    import subprocess
+#    command = "nvidia-smi --query-gpu=memory.free,memory.used --format=csv"
+#    memory_info = subprocess.check_output(command.split()).decode('ascii').split('\n')[1].split(',')
+#    memory_values = [int(x.strip().split(' ')[0]) for i, x in enumerate(memory_info)]
+#    return memory_values
+import subprocess
+import psutil
 def get_gpu_memory():
-    import subprocess
-    command = "nvidia-smi --query-gpu=memory.free,memory.used --format=csv"
-    memory_info = subprocess.check_output(command.split()).decode('ascii').split('\n')[1].split(',')
-    memory_values = [int(x.strip().split(' ')[0]) for i, x in enumerate(memory_info)]
+    try:
+        # Try running 'nvidia-smi' to get GPU memory on systems with NVIDIA GPUs
+        command = "nvidia-smi --query-gpu=memory.free,memory.used --format=csv"
+        memory_info = subprocess.check_output(command.split()).decode('ascii').split('\n')[1].split(',')
+        memory_values = [int(x.strip().split(' ')[0]) for i, x in enumerate(memory_info)]
+    except FileNotFoundError:
+        # If 'nvidia-smi' is not found, use the macOS version with Metal
+        mem_info = psutil.virtual_memory()
+        memory_values = [mem_info.available / (1024 * 1024), (mem_info.total - mem_info.available) / (1024 * 1024)] 
+
     return memory_values
+
 
 def setup_logger(logger_name, log_file, level=logging.INFO):
     log_setup = logging.getLogger(logger_name)
