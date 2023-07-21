@@ -166,8 +166,8 @@ def make_h5_db_parsl(use_parsl, fxn=make_h5_db):
         The parsl decorated function if parsl is meant to be used
     
     '''
-    from parsl.app.app import python_app
     if use_parsl == True:
+        from parsl.app.app import python_app
         return python_app(fxn)
     elif use_parsl == False:
         return fxn
@@ -242,8 +242,8 @@ def return_check_function(use_parsl, fxn=check_predictions_and_logs):
         The parsl decorated function if parsl is meant to be used
     
     '''
-    from parsl.app.app import python_app
     if use_parsl == True:
+        from parsl.app.app import python_app
         return python_app(fxn)
     elif use_parsl == False:
         return fxn
