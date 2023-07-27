@@ -1,9 +1,10 @@
 # Description: This script is used for ENFORMER inference
 # Author: Temi
 # Date: Wed 25 Jan 2023
+# Usage: 
 
 import os, sys, json, re
-import pandas as pd # for manipulating dataframes
+import pandas as pd 
 import time
 import parsl
 from datetime import date
@@ -244,9 +245,7 @@ def main():
     # print(line)
     warning_result = [re.search(warning_pattern, l).group(1) for l in lines if not re.search(warning_pattern, l) is None]
     success_result = [re.search(success_pattern, l).group(1) for l in lines if not re.search(success_pattern, l) is None]
-
     pd.DataFrame(list(set(warning_result))).to_csv(os.path.join(metadata_dir, f'{prediction_data_name}_{prediction_id}_{run_date}.unsuccessful_predictions.csv'), index=False, header=False)
-
     pd.DataFrame(list(set(success_result))).to_csv(os.path.join(metadata_dir, f'{prediction_data_name}_{prediction_id}_{run_date}.successful_predictions.csv'), index=False, header=False)
 
     # collect the successfule predictions
