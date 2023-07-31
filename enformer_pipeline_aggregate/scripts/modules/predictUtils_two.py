@@ -18,7 +18,7 @@ whereis_script = os.path.dirname(__file__) #os.path.dirname(sys.argv[0]) # or os
 #if __name__ == '__main__':
 if __name__ == 'predictUtils_two':
 
-    print(f'Using this config file: {tmp_config_path}')
+    print(f'Using this config file: {tmp_config_path}') # tmp_config_file is not defined here. this module is loaded and the path is provided.
     
     with open(f'{tmp_config_path}') as f:
         parameters = json.load(f)
@@ -172,13 +172,13 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                         if sample_predictions[hap].shape != predictions_expected_shape:
                             #print(sample_predictions[hap])
                             raise Exception(f'ERROR - {sample}\'s {hap} predictions shape is {sample_predictions[hap].shape} and is not equal to expected shape {predictions_expected_shape}.')
-                        else:
-                            print(f'Sample {sample} {input_region} {hap} predictions are of the correct shape:  {sample_predictions[hap].shape}')
+                        # else:
+                        #     print(f'Sample {sample} {input_region} {hap} predictions are of the correct shape:  {sample_predictions[hap].shape}')
                         
                     # otherwise, you can save the predictions ; prediction will be reshaped to (17, 5313) here
                     sample_logging_info = loggerUtils.save_haplotypes_h5_prediction(haplotype_predictions=sample_predictions, metadata=samples_enformer_inputs['metadata'], output_dir=output_dir, sample=sample)
 
-                    print(f'Sample {sample} {input_region} haplotypes predictions have been saved.')
+                    #print(f'Sample {sample} {input_region} haplotypes predictions have been saved.')
 
                     # check logging info/dictionary for the sample and the region
                     logging_type = checksUtils.return_sample_logging_type(sample=sample, query_region=input_region, logging_dictonary=logging_dictionary)
@@ -189,7 +189,7 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                             predictions_log_file = os.path.join(prediction_logfiles_folder, f'{sample}_log.csv')
                             sample_logging_info.extend([predict_time, retrieve_time])
                             logger_output.append(loggerUtils.log_predictions(predictions_log_file=predictions_log_file, what_to_write=sample_logging_info))
-                        print(f'Sample {sample} {input_region} haplotypes predictions have been logged.')
+                        #print(f'Sample {sample} {input_region} haplotypes predictions have been logged.')
                     elif logging_type == 'n':
                         logger_output.append(1)
                         continue
@@ -200,18 +200,18 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                 if tf.config.list_physical_devices('GPU'):
                     MEMORY_LOG_FILE = os.path.join(write_log['logdir'], "memory_usage.log")
                     loggerUtils.write_logger(log_msg_type = 'memory', logfile = MEMORY_LOG_FILE, message = msg_mem_log)
-            else:
-                mem_use = loggerUtils.get_gpu_memory() # [123, 456]#
-                msg_mem_log = f"[MEMORY] (GPU) at the end of batch {batch_num} prediction: free {mem_use[0]} mb, used {mem_use[1]} mb on " 
-                print(msg_mem_log)
+            # else:
+            #     mem_use = loggerUtils.get_gpu_memory() # [123, 456]#
+            #     msg_mem_log = f"[MEMORY] (GPU) at the end of batch {batch_num} prediction: free {mem_use[0]} mb, used {mem_use[1]} mb on " 
+            #     print(msg_mem_log)
 
             if write_log['logtypes']['cache']:
                 msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
                 CACHE_LOG_FILE = os.path.join(write_log['logdir'], 'cache_usage.log')
                 loggerUtils.write_logger(log_msg_type = 'cache', logfile = CACHE_LOG_FILE, message = msg_cac_log)
-            else:
-                msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
-                print(msg_cac_log)
+            # else:
+            #     msg_cac_log = f'[CACHE] (model) at batch {batch_num}: [{predictionUtils.get_model.cache_info()}]'
+            #     print(msg_cac_log)
 
         return(logger_output)
     

@@ -21,6 +21,11 @@ def get_gpu_memory():
     memory_values = [int(x.strip().split(' ')[0]) for i, x in enumerate(memory_info)]
     return memory_values
 
+# def count_number_of_gpus():
+#     import subprocess
+#     command = "nvidia-smi --list-gpus | wc -l"
+#     return()
+
 def setup_logger(logger_name, log_file, level=logging.INFO):
     log_setup = logging.getLogger(logger_name)
     formatter = logging.Formatter('[%(levelname)s: %(asctime)s] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
@@ -67,7 +72,7 @@ def slice_bins(locus, bin_size=128, nbins=896):
     start = int(locus[1])
     end = int(locus[2])
     midn = math.ceil((start + end) / 2)
-    print(f'Middle locations is: {midn}')
+    #print(f'Middle locations is: {midn}')
     nstart = midn - 57344 # (128*896) / 2
     #print(f'New start is: {nstart}')
     nend = midn + (57344 - 1)
@@ -97,10 +102,10 @@ def save_haplotypes_h5_prediction(haplotype_predictions, metadata, output_dir, s
     for key, values in haplotype_predictions.items():
         #print(f'[INFO] This is what is being saved {values.shape}')
         values_to_sum = values[bins_to_sum[0]:bins_to_sum[1], : ].mean(axis=0)
-        print(bins_to_sum)
-        print(values_to_sum.shape)
+        # print(bins_to_sum)
+        # print(values_to_sum.shape)
         houtput = os.path.join(output_dir, sample, key)
-        if not os.path.exists(houtput): os.makedirs(houtput)
+        if not os.path.exists(houtput): os.makedirs(houtput, exist_ok=True)
         h5save = str(f'{houtput}/{region}_predictions.h5')
         # for i in range(0, values.shape[0]):
             #print(values[i, :].shape)
@@ -130,13 +135,13 @@ def log_predictions(predictions_log_file, what_to_write):
 
     return(0)
 
-def log_error_sequences(error_folder, what_to_write):
+def log_error_sequences(error_file, what_to_write):
     import os, csv
 
-    open_mode = 'a' if os.path.isfile(error_folder) else 'w'
+    open_mode = 'a' if os.path.isfile(error_file) else 'w'
 
     #if not query_status: # i.e. if the list is not empty
-    with open(error_folder, open_mode, encoding='UTF8') as running_log_file:
+    with open(error_file, open_mode, encoding='UTF8') as running_log_file:
         logwriter = csv.writer(running_log_file)
         if open_mode == 'w':
             logwriter.writerow(['region', 'reason']) # 

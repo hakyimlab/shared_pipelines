@@ -55,13 +55,16 @@ def one_hot_encode(sequence):
 
     import kipoiseq
     import numpy as np
+    import os
 
     if not isinstance(sequence, str):
         raise Exception(f'[ERROR] Input to be one-hot encoded must be a str type. You provided a {type(sequence_encoded).__name__} type.')
 
-    #try:
-    sequence_encoded = kipoiseq.transforms.functional.one_hot_dna(sequence).astype(np.float32)[np.newaxis]
-    return(sequence_encoded)
+    try:
+        sequence_encoded = kipoiseq.transforms.functional.one_hot_dna(sequence).astype(np.float32)[np.newaxis]
+        return(sequence_encoded)
+    except KeyError as ke:
+        return(None)
 
 
 def reverse_complement_one_hot_encoded_sequences(one_hot_encoded_sequence):
@@ -141,7 +144,13 @@ def extract_reference_sequence(region, fasta_func=None, resize_for_enformer=True
         CACHE_LOG_FILE = os.path.join(write_log['logdir'], 'cache_usage.log')
         loggerUtils.write_logger(log_msg_type='cache', logfile=CACHE_LOG_FILE, message=msg_cac_log)
 
-    return({'sequence': one_hot_encode(ref_sequences), 'interval_object': reg_interval})
+    ohe = one_hot_encode(ref_sequences)
+    if ohe is None:
+        error_file = os.path.join(write_log['logdir'], 'invalid_queries.csv')
+        loggerUtils.log_error_sequences(error_file=error_file, what_to_write=[region, 'Weird (R or Y) sequence present'])
+        return(None)
+
+    return({'sequence': ohe, 'interval_object': reg_interval})
 
 
 def find_variants_in_vcf_file(cyvcf2_object, interval_object, samples):
@@ -374,20 +383,22 @@ def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, ha
             TIME_USAGE_FILE = os.path.join(write_log['logdir'], 'time_usage.log')
             time_msg = f'[TIME] Time to create input sequence for {len(samples)}\'s {query_region} ==> {time_used}'
             loggerUtils.write_logger(log_msg_type = 'time', logfile = TIME_USAGE_FILE, message = time_msg)
-        return({'sequence': {'haplotype0': one_hot_encode(generate_random_sequence_inputs())}, 'metadata': {'sequence_source':'random', 'region':query_region}})
+
+        ohe = one_hot_encode(generate_random_sequence_inputs())
+        if ohe is None:
+            error_file = os.path.join(write_log['logdir'], 'invalid_queries.csv')
+            loggerUtils.log_error_sequences(error_file=error_file, what_to_write=[query_region, 'Weird (R or Y) sequence present'])
+            return(None)
+        
+        return({'sequence': {'haplotype0': ohe}, 'metadata': {'sequence_source':'random', 'region':query_region}})
     else:
         reference_sequence = extract_reference_sequence(region=query_region, fasta_func=fasta_func, resize_for_enformer=resize_for_enformer, write_log=write_log, resize_length=resize_length)
-        #print(f'Region {region} sequences successfully created within create input function')
-        if np.all(reference_sequence['sequence'] == 0.25): # check if all the sequence are "NNNNNNNNNNN..."
-            error_folder = os.path.join(write_log['logdir'], 'invalid_queries.csv')
-            loggerUtils.log_error_sequences(error_folder=error_folder, what_to_write=[query_region, 'NNN* sequences'])
 
-            # err_msg = f'[INPUT] {query_region} is invalid; all nucleotides are N.'
-            # if (write_log is not None) and (write_log['logtypes']['error']):
-            #     MEMORY_ERROR_FILE = os.path.join(write_log['logdir'], 'error_details.log')
-            #     loggerUtils.write_logger(log_msg_type = 'error', logfile = MEMORY_ERROR_FILE, message = err_msg)
-            # else:
-            #     print(err_msg)
+        if reference_sequence is None:
+            return(None)
+        if np.all(reference_sequence['sequence'] == 0.25): # check if all the sequence are "NNNNNNNNNNN..."
+            error_file = os.path.join(write_log['logdir'], 'invalid_queries.csv')
+            loggerUtils.log_error_sequences(error_file=error_file, what_to_write=[query_region, 'NNN* sequences'])
             return(None)
         else:
             if sequence_source == 'reference':

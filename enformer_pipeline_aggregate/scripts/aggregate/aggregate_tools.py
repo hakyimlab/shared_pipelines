@@ -165,7 +165,8 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
             print(f'INFO - Saving file to {save_dir}/{each_id}_{agg_type}_{prediction_id}.csv.gz')
             if batch_num is None:
                 # writing to a gz file results in several issues
-                ty.to_csv(path_or_buf=f'{save_dir}/{each_id}_{agg_type}_{prediction_id}.csv', index=False)
+                outfile = f'{save_dir}/{each_id}_{agg_type}_{prediction_id}.csv.gz'
+                ty.to_csv(path_or_buf=outfile, index=False, compression='gzip')
                 print(f'INFO - Finished saving data for {each_id}')
             else:
                 ty.to_csv(path_or_buf=f'{save_dir}/{each_id}_{agg_type}_{prediction_id}_batch_{batch_num}.csv.gz', index=False, compression='gzip')

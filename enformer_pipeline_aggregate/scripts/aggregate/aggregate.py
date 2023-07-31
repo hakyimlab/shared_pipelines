@@ -16,7 +16,10 @@ import multiprocessing
 parser = argparse.ArgumentParser()
 parser.add_argument("--metadata_file", help="Path to the metadata file", type=str)
 parser.add_argument("--agg_types", nargs='+', help='<Required> aggregation type to be used', required=True)
+parser.add_argument("--output_directory", help='<Required> folder where aggregation will be saved', required=True)
 parser.add_argument("--hpc", required=True)
+parser.add_argument("--parsl_executor", required=True)
+parser.add_argument("--delete_enformer_outputs", action='store_true')
 args = parser.parse_args()
 
 print(f'INFO - Available CPUs are {multiprocessing.cpu_count()}')
@@ -71,9 +74,10 @@ agg_types = agg_types[0].split(' ')
 print(f'INFO - Aggregating these: {agg_types}')
 
 print(f'INFO - Currently on {prediction_data_name}')
-save_dir = os.path.join(base_path, 'aggregated_predictions') 
+save_dir = os.path.abspath(args.output_directory) #os.path.join(base_path, 'aggregated_predictions') 
+print(save_dir)
 if not os.path.isdir(save_dir):
-    os.makedirs(save_dir)
+    os.makedirs(save_dir, exist_ok=True)
 
 if individuals is None:
     ids_names = [prediction_data_name]
@@ -88,10 +92,14 @@ if use_parsl == True:
     print(f'INFO - Using parsl.')
 
     if args.hpc == 'beagle3':
-        parsl_params = {'working_dir':base_path, 'job_name':'aggregate_predictions', 'queue':"preemptable", 'walltime':"01:00:00", 'num_of_full_nodes':2, 'min_num_blocks':0, 'max_num_blocks':10}
+        parsl_params = {'working_dir':base_path, 'job_name':'aggregate_predictions', 'queue':"preemptable", 'walltime':"01:00:00", 'num_of_full_nodes': 1, 'min_num_blocks':0, 'max_num_blocks':2}
         #parsl.load(parslConfiguration.localParslConfig_htpool(parsl_params))
         #parsl.load(parslConfiguration.localParslConfig_htpool(parsl_params))
-        parsl.load(parslConfiguration.polaris_htParslConfig(parsl_params))
+        if args.parsl_executor == 'local':
+            parsl.load(parslConfiguration.beagle3_localParslConfig(parsl_params))
+            #parsl.load(parslConfiguration.beagle3_tpParslConfig(parsl_params))
+        elif args.parsl_executor == 'highthroughput':
+            parsl.load(parslConfiguration.polaris_htParslConfig(parsl_params))
 
     if args.hpc == 'polaris':
         parsl_params = {'working_dir':base_path, "job_name": "aggregate_predictions", "num_of_full_nodes": 4, "walltime": "06:00:00", "min_num_blocks": 0, "max_num_blocks": 8, "queue": "preemptable", "init_blocks": 1, "hpc": "polaris", "account": "covid-ct", "provider": "highthroughput", "worker_init": "source ~/.bashrc; conda activate /lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools/lib"}
@@ -120,3 +128,7 @@ if use_parsl == True:
     app_execs = [r.result() for r in app_futures]
 
 print(f'INFO - Aggregation complete for all.')
+
+if args.delete_enformer_outputs:
+    print(f'INFO - Deleting enformer predictions')
+    os.system(f"rm -rf {enformer_predictions_path}")

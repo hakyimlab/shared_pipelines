@@ -66,7 +66,7 @@ def check_queries(sample, queries, output_dir, prediction_logfiles_folder, seque
                 queries_logged = np.array([(query in id_logfile.region.values) for query in queries])
                 # s
                 if not queries_logged.shape[0] == queries_saved.shape[0]:
-                    raise Exception("Lengths of queries logged and saved conditions are not the same")
+                    raise Exception("ERROR - Lengths of queries logged and saved conditions are not the same")
                 queries_condition = queries_saved * queries_logged # true should not be predicted or logged; False should be
                 queries_condition = queries_condition.tolist()
                 # by default , log type is yes
@@ -98,8 +98,3 @@ def check_queries(sample, queries, output_dir, prediction_logfiles_folder, seque
         else:
             output = [{'query':query, 'logtype':'y'} for query in queries]
             return(output)
-
-
-
-
-

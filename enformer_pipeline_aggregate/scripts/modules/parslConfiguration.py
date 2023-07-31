@@ -282,7 +282,7 @@ def beagle3_localParslConfig(params):
     # I defined these locations otherwise parsl will use the current directory to output the run informations and log messages
     workingdir = params['working_dir']
     rundir = os.path.join(workingdir, 'runinfo')
-    job_name = params['job_name']
+    # job_name = params['job_name']
     #parsl.clear()
 
     local_htex = Config(
@@ -292,7 +292,7 @@ def beagle3_localParslConfig(params):
                 max_workers=4, # vs max_workers
                 available_accelerators=4,
                 worker_debug=True,
-                cores_per_worker=32, # how many cores per worker #nodes_per_block, 2 is usually enough or 1.
+                cores_per_worker=8, # how many cores per worker #nodes_per_block, 2 is usually enough or 1.
                 working_dir=workingdir,
                 provider=LocalProvider(
                     channel=LocalChannel(),
