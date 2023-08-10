@@ -112,3 +112,6 @@ An example of a config.json file is [here](./config_files). You should choose on
 
 #### Mon Jun 5 2023
 - [X] Added a new function to separate successful from unsuccessful predictions. This is to allow for re-running of unsuccessful predictions.
+
+#### Thurs Aug 10 2023
+- [X] Included new functions to aggregate on the fly based on the width of the input region. User can also supply an `aggregate_by_width` parameter which will average the bins corresponding to the width of the input regions. If a number is supplied, the bins will be extend on both sides by that number before averaging.

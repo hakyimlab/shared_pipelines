@@ -66,42 +66,69 @@ def write_logger(log_msg_type, logfile, message):
 
 
 
+# def slice_bins(locus, bin_size=128, nbins=896):
+#     import math
+#     locus = locus.split('_')
+#     start = int(locus[1])
+#     end = int(locus[2])
+#     midn = math.ceil((start + end) / 2)
+#     #print(f'Middle locations is: {midn}')
+#     nstart = midn - 57344 # (128*896) / 2
+#     #print(f'New start is: {nstart}')
+#     nend = midn + (57344 - 1)
+#     #print(f'New end is: {nend}')
+#     cnt_start = nstart
+#     slice_start = 0
+#     while cnt_start <= start:
+#         cnt_start += bin_size
+#         slice_start += 1
+#     cnt_start = nstart
+#     slice_end = 0
+#     while cnt_start <= end:
+#         cnt_start += bin_size
+#         slice_end += 1
+#     return(slice_start, slice_end)
+
+
 def slice_bins(locus, bin_size=128, nbins=896):
     import math
+    import numpy as np
     locus = locus.split('_')
     start = int(locus[1])
     end = int(locus[2])
     midn = math.ceil((start + end) / 2)
-    #print(f'Middle locations is: {midn}')
-    nstart = midn - 57344 # (128*896) / 2
-    #print(f'New start is: {nstart}')
-    nend = midn + (57344 - 1)
-    #print(f'New end is: {nend}')
-    cnt_start = nstart
-    slice_start = 0
-    while cnt_start <= start:
-        cnt_start += bin_size
-        slice_start += 1
-    cnt_start = nstart
-    slice_end = 0
-    while cnt_start <= end:
-        cnt_start += bin_size
-        slice_end += 1
-    return(slice_start, slice_end)
+    nstart = midn - ((bin_size*nbins) / 2) # (128*896) / 2
+    sstart = (start - nstart)
+    send = sstart + ((end - start) - 1)
+    bins = list(range(0, nbins*bin_size, bin_size))
+    out = np.digitize([sstart, send], bins=bins).tolist()
+    if((end - start) <= 128):
+        return(out)
+    elif(((end - start) > 128) or (end - start) % bin_size > 0):
+        out[1] = out[1] + 1
+    return(out)
 
 
-
-def save_haplotypes_h5_prediction(haplotype_predictions, metadata, output_dir, sample):
+def save_haplotypes_h5_prediction(haplotype_predictions, metadata, output_dir, sample, aggregate_by_width=True):
 
     import h5py
     import os
     import numpy
 
     region = metadata['region']
-    bins_to_sum = slice_bins(region)
+    if aggregate_by_width == True:
+        bins_to_sum = slice_bins(region)
+    elif aggregate_by_width == False:
+        bins_to_sum = [None, None]
+    elif isinstance(aggregate_by_width, int):
+        bins_to_sum = slice_bins(region)
+        print(f'INFO - before, bins to sum were: {bins_to_sum}')
+        bins_to_sum = [bins_to_sum[0] - aggregate_by_width, bins_to_sum[1] + aggregate_by_width]
+        print(f'INFO - after, bins to sum were: {bins_to_sum}')
+
     for key, values in haplotype_predictions.items():
         #print(f'[INFO] This is what is being saved {values.shape}')
-        values_to_sum = values[bins_to_sum[0]:bins_to_sum[1], : ].mean(axis=0)
+        values = values[bins_to_sum[0]:bins_to_sum[1], : ].mean(axis=0)
         # print(bins_to_sum)
         # print(values_to_sum.shape)
         houtput = os.path.join(output_dir, sample, key)
@@ -110,7 +137,7 @@ def save_haplotypes_h5_prediction(haplotype_predictions, metadata, output_dir, s
         # for i in range(0, values.shape[0]):
             #print(values[i, :].shape)
         with h5py.File(h5save, 'w') as hf:
-            hf.create_dataset(region, data=values_to_sum)
+            hf.create_dataset(region, data=values)
 
     output = [metadata['region'], sample, 'completed', metadata['sequence_source']]
 
