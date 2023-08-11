@@ -353,52 +353,47 @@ def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, ha
     import os
     import time
 
-    # print('Within create input function')
-    # print(f'Regions are: {region_details}')
-    # print(f'samples are: {samples}')
-    # print(f'path_to_vcf are: {path_to_vcf}')
-    # print(f'sequence_source are: {sequence_source}')
-
-    # region = region_details['query']
-    # logtype = region_details['logtype']
-
     if sequence_source is None:
         raise Exception(f'[ERROR] Fatal. Please, pass in a genome sequence source e.g. personalized, reference, or random.')
 
     tic = time.perf_counter()
 
     if sequence_source == 'random':
-        if (write_log is not None) and (write_log['logtypes']['time']):
-            toc = time.perf_counter()
-            time_used = toc - tic
-            TIME_USAGE_FILE = os.path.join(write_log['logdir'], 'time_usage.log')
-            time_msg = f'[TIME] Time to create input sequence for {len(samples)}\'s {query_region} ==> {time_used}'
-            loggerUtils.write_logger(log_msg_type = 'time', logfile = TIME_USAGE_FILE, message = time_msg)
-        return({'sequence': {'haplotype0': one_hot_encode(generate_random_sequence_inputs())}, 'metadata': {'sequence_source':'random', 'region':query_region}})
+        # if (write_log is not None) and (write_log['logtypes']['time']):
+        #     toc = time.perf_counter()
+        #     time_used = toc - tic
+        #     TIME_USAGE_FILE = os.path.join(write_log['logdir'], 'time_usage.log')
+        #     time_msg = f'[TIME] Time to create input sequence for {len(samples)}\'s {query_region} ==> {time_used}'
+        #     loggerUtils.write_logger(log_msg_type = 'time', logfile = TIME_USAGE_FILE, message = time_msg)
+        
+        ohc = one_hot_encode(generate_random_sequence_inputs())
+        if reverse_complement == True:
+            ohc_rc = reverse_complement_one_hot_encoded_sequences(ohc)
+        else:
+            ohc_rc = None
+        return({'sequence': {'haplotype0': ohc, 'haplotype0_rc': ohc_rc}, 'metadata': {'sequence_source':'random', 'region':query_region}})
     else:
         reference_sequence = extract_reference_sequence(region=query_region, fasta_func=fasta_func, resize_for_enformer=resize_for_enformer, write_log=write_log, resize_length=resize_length)
         #print(f'Region {region} sequences successfully created within create input function')
         if np.all(reference_sequence['sequence'] == 0.25): # check if all the sequence are "NNNNNNNNNNN..."
             error_folder = os.path.join(write_log['logdir'], 'invalid_queries.csv')
             loggerUtils.log_error_sequences(error_folder=error_folder, what_to_write=[query_region, 'NNN* sequences'])
-
-            # err_msg = f'[INPUT] {query_region} is invalid; all nucleotides are N.'
-            # if (write_log is not None) and (write_log['logtypes']['error']):
-            #     MEMORY_ERROR_FILE = os.path.join(write_log['logdir'], 'error_details.log')
-            #     loggerUtils.write_logger(log_msg_type = 'error', logfile = MEMORY_ERROR_FILE, message = err_msg)
-            # else:
-            #     print(err_msg)
             return(None)
         else:
             if sequence_source == 'reference':
-                if (write_log is not None) and (write_log['logtypes']['time']):
-                    toc = time.perf_counter()
-                    time_used = toc - tic
-                    TIME_USAGE_FILE = os.path.join(write_log['logdir'], 'time_usage.log')
-                    time_msg = f'[TIME] Time to create input sequence for {len(samples)}\'s {query_region} ==> {time_used}'
-                    loggerUtils.write_logger(log_msg_type = 'time', logfile = TIME_USAGE_FILE, message = time_msg)
+                # if (write_log is not None) and (write_log['logtypes']['time']):
+                #     toc = time.perf_counter()
+                #     time_used = toc - tic
+                #     TIME_USAGE_FILE = os.path.join(write_log['logdir'], 'time_usage.log')
+                #     time_msg = f'[TIME] Time to create input sequence for {len(samples)}\'s {query_region} ==> {time_used}'
+                #     loggerUtils.write_logger(log_msg_type = 'time', logfile = TIME_USAGE_FILE, message = time_msg)
+                if reverse_complement == True:
+                    reference_sequence_rc = reverse_complement_one_hot_encoded_sequences(reference_sequence['sequence'])
+                else:
+                    reference_sequence_rc = None
 
-                return({'sequence': {'haplotype0': reference_sequence['sequence']}, 'metadata': {'sequence_source':'ref', 'region':query_region}})
+                return({'sequence': {'haplotype0': reference_sequence['sequence'], 'haplotype0_rc': reference_sequence_rc}, 'metadata': {'sequence_source':'ref', 'region':query_region}})
+            
             elif sequence_source == 'personalized':
                 # which vcf file
                 vcf_chr = cyvcf2.cyvcf2.VCF(path_to_vcf, samples=samples)

@@ -23,7 +23,8 @@ parser.add_argument("--delete_enformer_outputs", action='store_true')
 args = parser.parse_args()
 
 print(f'INFO - Available CPUs are {multiprocessing.cpu_count()}')
-
+if args.delete_enformer_outputs:
+    print(f'INFO - will delete enformer predictions after aggregating')
 # use parsl if the num of rows of log_data is more than 10000
 use_parsl = True
 
