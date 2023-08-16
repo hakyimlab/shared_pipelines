@@ -148,13 +148,19 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                         print(f"[WARNING] Some samples cannot be found. But this job will continue")
                 #logging_info_list = [] # collect all logging information here
                 for sample in v_samples:
+                    
                     if samples_enformer_inputs['metadata']['sequence_source'] == 'var':
-                        tic = time.perf_counter()
+                        if mode == 'unphased':
+                            tic = time.perf_counter()
+                            sample_input = {'haplotype0': (samples_enformer_inputs['sequence'][sample]['haplotype1'] + samples_enformer_inputs['sequence'][sample]['haplotype2']) / 2}
+                            unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=sample_input, head=head)
+                        else: 
+                            tic = time.perf_counter()
 
-                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample], head=head)
+                            unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample], head=head)
+                
                     elif samples_enformer_inputs['metadata']['sequence_source'] in ['ref', 'random']:
                         tic = time.perf_counter()
-
                         unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'], head=head)
                     
                     toc = time.perf_counter()
