@@ -144,7 +144,7 @@ def extract_reference_sequence(region, fasta_func=None, resize_for_enformer=True
     return({'sequence': one_hot_encode(ref_sequences), 'interval_object': reg_interval})
 
 
-def find_variants_in_vcf_file(cyvcf2_object, interval_object, samples):
+def find_variants_in_vcf_file(cyvcf2_object, mode, interval_object, samples):
 
     """
     Given a cyvcf2 object and a kipoiseq.Interval object, as well as a list of samples, extract the variants for the samples for the intervals.
@@ -171,17 +171,20 @@ def find_variants_in_vcf_file(cyvcf2_object, interval_object, samples):
     #     raise Exception(f'[ERROR] Fatal. Some samples are not in the VCF file.')
         
     query = f"{interval_object['chr']}:{interval_object['start']}-{interval_object['end']}"
-
     variants_dictionary = {}
     variants_dictionary['chr'] = interval_object['chr']
     variants_dictionary['positions'] = tuple(variant.POS for variant in cyvcf2_object(query))
     if not variants_dictionary['positions']:
         return(None)
-        
+    if mode == "phased":
+        delim = '|'
+    elif mode == "unphased":
+        delim = '/'
+
     for i, sample in enumerate(samples):
         try:
             if sample in cyvcf2_object.samples:
-                variants_dictionary[sample] = tuple([variant.genotypes[i][0:2], variant.gt_bases[i].split('|')] for variant in cyvcf2_object(query))
+                variants_dictionary[sample] = tuple([variant.genotypes[i][0:2], variant.gt_bases[i].split(delim)] for variant in cyvcf2_object(query))
         except UserWarning:
             print(f'[WARNING] {sample} is not in the VCF file.')
             continue
@@ -333,7 +336,7 @@ def replace_variants_in_reference_sequence(query_sequences_encoded, mapping_dict
     return(variant_encoded)
 
 
-def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=None, sequence_source=None, reverse_complement=False):
+def create_input_for_enformer(query_region, samples, path_to_vcf, mode, fasta_func, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=None, sequence_source=None, reverse_complement=False):
     '''
     Given a region in the genome, a reference genome (fasta) and a VCF file, create an individual's sequence for that region
 
@@ -397,7 +400,7 @@ def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, ha
             elif sequence_source == 'personalized':
                 # which vcf file
                 vcf_chr = cyvcf2.cyvcf2.VCF(path_to_vcf, samples=samples)
-                samples_variants = find_variants_in_vcf_file(cyvcf2_object=vcf_chr, interval_object=reference_sequence['interval_object'], samples=samples)
+                samples_variants = find_variants_in_vcf_file(cyvcf2_object=vcf_chr, mode=mode, interval_object=reference_sequence['interval_object'], samples=samples)
 
                 if samples_variants: # go on and change the variants by position
                     samples_mapping_dictionary = create_mapping_dictionary(variants_array=samples_variants, interval_start = reference_sequence['interval_object']['start'], haplotype=hap_type, sequence_source=sequence_source, samples=None)

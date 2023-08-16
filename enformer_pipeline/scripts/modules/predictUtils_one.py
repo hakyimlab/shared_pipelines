@@ -4,7 +4,7 @@
 
 
 #@python_app
-def run_batch_predictions(batch_regions, samples, path_to_vcf, batch_num, script_path, output_dir, prediction_logfiles_folder, sequence_source, tmp_config_path = None, p_two=None): #
+def run_batch_predictions(batch_regions, samples, path_to_vcf, mode, head, batch_num, script_path, output_dir, prediction_logfiles_folder, sequence_source, tmp_config_path = None, p_two=None): #
     """
     Predict and save on a given batch of regions in the genome
 
@@ -86,7 +86,7 @@ def run_batch_predictions(batch_regions, samples, path_to_vcf, batch_num, script
             samples = list(filtered_check_result.keys())
             tic = time.perf_counter()
 
-            reg_prediction = predictUtils_two.enformer_predict_on_batch(batch_regions=pqueries, samples=samples, logging_dictionary=filtered_check_result, path_to_vcf = path_to_vcf, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, batch_num=batch_num, sequence_source=sequence_source)
+            reg_prediction = predictUtils_two.enformer_predict_on_batch(batch_regions=pqueries, samples=samples, logging_dictionary=filtered_check_result, path_to_vcf = path_to_vcf, mode = mode, head = head, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, batch_num=batch_num, sequence_source=sequence_source)
             
             toc = time.perf_counter()
             print(f'[INFO] (time) to predict on batch {batch_num} is {toc - tic}')

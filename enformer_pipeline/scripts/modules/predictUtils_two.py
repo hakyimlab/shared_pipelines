@@ -77,7 +77,7 @@ else:
 
 #print(bins_indices,tracks_indices)
 
-def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, batch_num, output_dir, prediction_logfiles_folder, sequence_source):
+def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, mode, head, batch_num, output_dir, prediction_logfiles_folder, sequence_source):
 
     # this could mean
     # - check_queries returned nothing because
@@ -123,7 +123,7 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
             #print(f'Creating sequences for {input_region}')
             tic = time.perf_counter()
 
-            samples_enformer_inputs = sequencesUtils.create_input_for_enformer(query_region=input_region, samples=v_samples, path_to_vcf=path_to_vcf, fasta_func=fasta_extractor, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=write_log, sequence_source=sequence_source, reverse_complement=reverse_complement)
+            samples_enformer_inputs = sequencesUtils.create_input_for_enformer(query_region=input_region, samples=v_samples, path_to_vcf=path_to_vcf, mode=mode, fasta_func=fasta_extractor, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=write_log, sequence_source=sequence_source, reverse_complement=reverse_complement)
 
             toc = time.perf_counter()
 
@@ -151,11 +151,11 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                     if samples_enformer_inputs['metadata']['sequence_source'] == 'var':
                         tic = time.perf_counter()
 
-                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample])
+                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample], head=head)
                     elif samples_enformer_inputs['metadata']['sequence_source'] in ['ref', 'random']:
                         tic = time.perf_counter()
 
-                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'])
+                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'], head=head)
                     
                     toc = time.perf_counter()
                     predict_time = toc - tic
