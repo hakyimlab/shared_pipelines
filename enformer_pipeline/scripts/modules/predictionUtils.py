@@ -33,6 +33,8 @@ def enformer_predict_on_sequence(model, sample_input, head):
     
     prediction_output = {}
     for haplotype, sequence_encoding in sample_input.items():
+        if sequence_encoding is None:
+            continue
         if not sequence_encoding.shape == (1, 393216, 4):
             raise Exception(f'[ERROR] Fatal. Input sequence shape is not appropriate')
         # prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()[: , range(448 - 8, (448 + 8 + 1)), : ]

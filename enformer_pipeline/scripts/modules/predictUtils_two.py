@@ -40,6 +40,10 @@ if __name__ == 'predictUtils_two':
         bins_indices_raw = parameters['bins_to_save']
         tracks_indices_raw = parameters['tracks_to_save']
         reverse_complement = parameters["reverse_complement"]
+        if "head" in parameters:
+            head = parameters["head"]
+        else:
+            head = "human"
 
 if any([write_log['logtypes'][ltype] for ltype in ['memory', 'error', 'time', 'cache']]):
     write_log['logdir'] = os.path.join(project_dir, write_logdir)
@@ -64,16 +68,28 @@ grow_memory = True
 bins_indices, tracks_indices = collectUtils.parse_bins_and_tracks(bins_indices_raw,tracks_indices_raw)
 
 # Check prediction size for correctness
-if bins_indices == None:
-    if tracks_indices == None:
-        predictions_expected_shape = (896,5313)
+if head == "human":
+    if bins_indices == None:
+        if tracks_indices == None:
+            predictions_expected_shape = (896,5313)
+        else:
+            predictions_expected_shape = (896,len(tracks_indices))
     else:
-        predictions_expected_shape = (896,len(tracks_indices))
-else:
-    if tracks_indices == None:
-        predictions_expected_shape = (len(bins_indices), 5313)
+        if tracks_indices == None:
+            predictions_expected_shape = (len(bins_indices), 5313)
+        else:
+            predictions_expected_shape = (len(bins_indices),len(tracks_indices))
+elif head == "mouse":
+    if bins_indices == None:
+        if tracks_indices == None:
+            predictions_expected_shape = (896,1643)
+        else:
+            predictions_expected_shape = (896,len(tracks_indices))
     else:
-        predictions_expected_shape = (len(bins_indices),len(tracks_indices))
+        if tracks_indices == None:
+            predictions_expected_shape = (len(bins_indices), 1643)
+        else:
+            predictions_expected_shape = (len(bins_indices),len(tracks_indices))
 
 #print(bins_indices,tracks_indices)
 
