@@ -54,15 +54,11 @@ def main():
         n_regions = parameters["n_regions"]
         batch_regions = int(parameters['batch_regions'])
         use_parsl = parameters['use_parsl']
+        parsl_parameters = parameters['parsl_parameters']
         sequence_source = parameters['sequence_source']
         exclude_regions = parameters["exclude_regions"]
         reverse_complement = parameters["reverse_complement"]
-
-        if "head" in parameters:
-            head = parameters["head"]
-        else:
-            head = "human"
-
+    
         metadata_dir = parameters['metadata_dir']
         if not os.path.isdir(metadata_dir):
             os.makedirs(metadata_dir)
@@ -79,8 +75,6 @@ def main():
         # personalized parameters 
         individuals = parameters['individuals'] if sequence_source == 'personalized' else None
         vcf_files_dict = parameters['vcf_files'] if sequence_source == 'personalized' else None
-        vcf_mode = parameters['vcf_mode'] if sequence_source == 'personalized' else None
-        
 
         if sequence_source == 'personalized':
              # use only the chromosomes that have been made available in the config file vcf params
@@ -105,15 +99,13 @@ def main():
     #     json.dump(tmp_config_data, cj)
 
     # modify parsl parameters to add the working directory
-    
+    parsl_parameters['working_dir'] = project_dir
 
     if not os.path.isdir(job_log_dir):
         os.makedirs(job_log_dir)
 
     # set parsl directives
     if use_parsl:
-        parsl_parameters = parameters['parsl_parameters']
-        parsl_parameters['working_dir'] = project_dir
         directives.parsl_directives(use_parsl, parsl_parameters)
     
     # importing this module does not work; best to execute it here
@@ -215,7 +207,7 @@ def main():
             for region_list in region_batches:
                 #print(len(sample_list))
                 #print(f'{len(region_list)} regions in {chromosome} for {len(sample_list)} samples')
-                sample_app_futures.append(prediction_fxn(batch_regions=list(region_list), samples=list(sample_list), path_to_vcf = chr_vcf_file, mode = vcf_mode, head = head, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source, tmp_config_path=params_path, p_two=p_two))   
+                sample_app_futures.append(prediction_fxn(batch_regions=list(region_list), samples=list(sample_list), path_to_vcf = chr_vcf_file, batch_num = count, script_path=script_path, output_dir=output_dir, prediction_logfiles_folder=prediction_logfiles_folder, sequence_source=sequence_source, tmp_config_path=params_path, p_two=p_two))   
 
                 count = count + 1 
 

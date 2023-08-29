@@ -18,7 +18,7 @@ def get_model(model_path):
     import tensorflow as tf
     return tf.saved_model.load(model_path).model
 
-def enformer_predict_on_sequence(model, sample_input, head):
+def enformer_predict_on_sequence(model, sample_input):
     """
     given a compatible sequence that has been one-hot encoded, predict on ENFORMER
 
@@ -35,13 +35,13 @@ def enformer_predict_on_sequence(model, sample_input, head):
     for haplotype, sequence_encoding in sample_input.items():
         if sequence_encoding is None:
             continue
+        print("haplotype:", haplotype)
+        print("sequence encoding:", sequence_encoding)
         if not sequence_encoding.shape == (1, 393216, 4):
             raise Exception(f'[ERROR] Fatal. Input sequence shape is not appropriate')
-        # prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()[: , range(448 - 8, (448 + 8 + 1)), : ]
-        prediction = model.predict_on_batch(sequence_encoding)[head].numpy()
-
+        prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()[: , range(448 - 8, (448 + 8 + 1)), : ]
+        prediction = model.predict_on_batch(sequence_encoding)['human'].numpy()
         prediction_output[haplotype] = prediction
-        
     return(prediction_output)
 
 

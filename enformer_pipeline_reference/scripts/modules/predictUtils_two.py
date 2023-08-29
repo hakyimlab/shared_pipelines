@@ -40,10 +40,6 @@ if __name__ == 'predictUtils_two':
         bins_indices_raw = parameters['bins_to_save']
         tracks_indices_raw = parameters['tracks_to_save']
         reverse_complement = parameters["reverse_complement"]
-        if "head" in parameters:
-            head = parameters["head"]
-        else:
-            head = "human"
 
 if any([write_log['logtypes'][ltype] for ltype in ['memory', 'error', 'time', 'cache']]):
     write_log['logdir'] = os.path.join(project_dir, write_logdir)
@@ -68,32 +64,20 @@ grow_memory = True
 bins_indices, tracks_indices = collectUtils.parse_bins_and_tracks(bins_indices_raw,tracks_indices_raw)
 
 # Check prediction size for correctness
-if head == "human":
-    if bins_indices == None:
-        if tracks_indices == None:
-            predictions_expected_shape = (896,5313)
-        else:
-            predictions_expected_shape = (896,len(tracks_indices))
+if bins_indices == None:
+    if tracks_indices == None:
+        predictions_expected_shape = (896,5313)
     else:
-        if tracks_indices == None:
-            predictions_expected_shape = (len(bins_indices), 5313)
-        else:
-            predictions_expected_shape = (len(bins_indices),len(tracks_indices))
-elif head == "mouse":
-    if bins_indices == None:
-        if tracks_indices == None:
-            predictions_expected_shape = (896,1643)
-        else:
-            predictions_expected_shape = (896,len(tracks_indices))
+        predictions_expected_shape = (896,len(tracks_indices))
+else:
+    if tracks_indices == None:
+        predictions_expected_shape = (len(bins_indices), 5313)
     else:
-        if tracks_indices == None:
-            predictions_expected_shape = (len(bins_indices), 1643)
-        else:
-            predictions_expected_shape = (len(bins_indices),len(tracks_indices))
+        predictions_expected_shape = (len(bins_indices),len(tracks_indices))
 
 #print(bins_indices,tracks_indices)
 
-def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, mode, head, batch_num, output_dir, prediction_logfiles_folder, sequence_source):
+def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_to_vcf, batch_num, output_dir, prediction_logfiles_folder, sequence_source):
 
     # this could mean
     # - check_queries returned nothing because
@@ -139,8 +123,7 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
             #print(f'Creating sequences for {input_region}')
             tic = time.perf_counter()
 
-            samples_enformer_inputs = sequencesUtils.create_input_for_enformer(query_region=input_region, samples=v_samples, path_to_vcf=path_to_vcf, mode=mode, fasta_func=fasta_extractor, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=write_log, sequence_source=sequence_source, reverse_complement=reverse_complement)
-
+            samples_enformer_inputs = sequencesUtils.create_input_for_enformer(query_region=input_region, samples=v_samples, path_to_vcf=path_to_vcf, fasta_func=fasta_extractor, hap_type = 'both', resize_for_enformer=True, resize_length=None, write_log=write_log, sequence_source=sequence_source, reverse_complement=reverse_complement)
             toc = time.perf_counter()
 
             retrieve_time = (toc - tic)/len(v_samples) #len(list(samples_enformer_inputs['sequence'].keys()))
@@ -164,21 +147,14 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                         print(f"[WARNING] Some samples cannot be found. But this job will continue")
                 #logging_info_list = [] # collect all logging information here
                 for sample in v_samples:
-                    
                     if samples_enformer_inputs['metadata']['sequence_source'] == 'var':
-                        if mode == 'unphased':
-                            tic = time.perf_counter()
-                            sample_input = {'haplotype0': (samples_enformer_inputs['sequence'][sample]['haplotype1'] + samples_enformer_inputs['sequence'][sample]['haplotype2']) / 2}
-                            unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=sample_input, head=head)
-                        else: 
-                            tic = time.perf_counter()
+                        tic = time.perf_counter()
 
-                            unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample], head=head)
-                
+                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'][sample])
                     elif samples_enformer_inputs['metadata']['sequence_source'] in ['ref', 'random']:
                         tic = time.perf_counter()
-                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'], head=head)
-                    
+                        unfiltered_sample_predictions = predictionUtils.enformer_predict_on_sequence(model=enformer_model, sample_input=samples_enformer_inputs['sequence'])
+                        print("after predict:", unfiltered_sample_predictions)
                     toc = time.perf_counter()
                     predict_time = toc - tic
                     
