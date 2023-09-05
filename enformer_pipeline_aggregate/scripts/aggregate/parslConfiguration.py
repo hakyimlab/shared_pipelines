@@ -271,7 +271,7 @@ def beagle3_localParslConfig(params):
     from parsl.providers import LocalProvider
     from parsl.config import Config
     from parsl.channels import LocalChannel
-    from parsl.launchers import SrunLauncher
+    from parsl.launchers import SingleNodeLauncher
 
     import os
 
@@ -289,7 +289,7 @@ def beagle3_localParslConfig(params):
                 max_workers=4, # vs max_workers
                 available_accelerators=4,
                 worker_debug=True,
-                cores_per_worker=12, # how many cores per worker #nodes_per_block, 2 is usually enough or 1.
+                cores_per_worker=18, # how many cores per worker #nodes_per_block, 2 is usually enough or 1.
                 working_dir=workingdir,
                 provider=LocalProvider(
                     channel=LocalChannel(),
@@ -297,7 +297,7 @@ def beagle3_localParslConfig(params):
                     nodes_per_block=params['num_of_full_nodes'],
                     min_blocks=params['min_num_blocks'],
                     max_blocks=params['max_num_blocks'],
-                    launcher=SrunLauncher()
+                    launcher=SingleNodeLauncher()
                 ),
             )
         ],

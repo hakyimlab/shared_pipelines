@@ -129,8 +129,8 @@ def save_haplotypes_h5_prediction(haplotype_predictions, metadata, output_dir, s
     for key, values in haplotype_predictions.items():
         #print(f'[INFO] This is what is being saved {values.shape}')
         values = values[bins_to_sum[0]:bins_to_sum[1], : ].mean(axis=0)
-        # print(bins_to_sum)
-        # print(values_to_sum.shape)
+        print(bins_to_sum)
+        print(values.shape)
         houtput = os.path.join(output_dir, sample, key)
         if not os.path.exists(houtput): os.makedirs(houtput, exist_ok=True)
         h5save = str(f'{houtput}/{region}_predictions.h5')

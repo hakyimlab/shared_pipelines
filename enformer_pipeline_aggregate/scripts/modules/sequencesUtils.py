@@ -413,6 +413,7 @@ def create_input_for_enformer(query_region, samples, path_to_vcf, fasta_func, ha
             elif sequence_source == 'personalized':
                 # which vcf file
                 vcf_chr = cyvcf2.cyvcf2.VCF(path_to_vcf, samples=samples)
+                samples = vcf_chr.samples
                 samples_variants = find_variants_in_vcf_file(cyvcf2_object=vcf_chr, interval_object=reference_sequence['interval_object'], samples=samples)
 
                 if samples_variants: # go on and change the variants by position

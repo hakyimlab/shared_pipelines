@@ -266,6 +266,53 @@ def beagle3_htParslConfig(params):
     )
     return config
 
+# def beagle3_localParslConfig(params):
+
+#     import parsl
+#     # Make a config that runs on two nodes
+#     from parsl.executors import HighThroughputExecutor
+#     from parsl.providers import LocalProvider
+#     from parsl.config import Config
+#     from parsl.channels import LocalChannel
+#     from parsl.launchers import SrunLauncher
+
+#     import os
+
+#     print(f'INFO - Parsl version: {parsl.__version__}')
+#     # I defined these locations otherwise parsl will use the current directory to output the run informations and log messages
+#     workingdir = params['working_dir']
+#     rundir = os.path.join(workingdir, 'runinfo')
+#     # job_name = params['job_name']
+#     #parsl.clear()
+
+#     local_htex = Config(
+#         executors=[
+#             HighThroughputExecutor(
+#                 label="htex_Local",
+#                 max_workers=4, # vs max_workers
+#                 available_accelerators=4,
+#                 worker_debug=True,
+#                 cores_per_worker=16, # how many cores per worker #nodes_per_block, 2 is usually enough or 1.
+#                 working_dir=workingdir,
+#                 provider=LocalProvider(
+#                     channel=LocalChannel(),
+#                     init_blocks=1,
+#                     nodes_per_block=params['num_of_full_nodes'],
+#                     min_blocks=params['min_num_blocks'],
+#                     max_blocks=params['max_num_blocks'],
+#                     launcher=SrunLauncher(),
+#                     worker_init=params['worker_init']
+#                 ),
+#             )
+#         ],
+#         strategy=None,
+#         run_dir=rundir
+#     )
+
+#     return(local_htex)
+
+
+
 def beagle3_localParslConfig(params):
 
     import parsl
@@ -274,7 +321,7 @@ def beagle3_localParslConfig(params):
     from parsl.providers import LocalProvider
     from parsl.config import Config
     from parsl.channels import LocalChannel
-    from parsl.launchers import SrunLauncher
+    from parsl.launchers import SingleNodeLauncher
 
     import os
 
@@ -284,11 +331,17 @@ def beagle3_localParslConfig(params):
     rundir = os.path.join(workingdir, 'runinfo')
     # job_name = params['job_name']
     #parsl.clear()
+    # srun_prepend = ["#SBATCH --gres=gpu:4", 
+    #                 "#SBATCH --account='pi-haky'",
+    #                 "#SBATCH --nodes=1",
+    #                 "#SBATCH --exclusive",
+    #                 "#SBATCH --cpus-per-task=4"]
+    # srun_prepend = '\n'.join(srun_prepend)
 
     local_htex = Config(
         executors=[
             HighThroughputExecutor(
-                label="htex_Local",
+                label="htex_slurm",
                 max_workers=4, # vs max_workers
                 available_accelerators=4,
                 worker_debug=True,
@@ -300,7 +353,7 @@ def beagle3_localParslConfig(params):
                     nodes_per_block=params['num_of_full_nodes'],
                     min_blocks=params['min_num_blocks'],
                     max_blocks=params['max_num_blocks'],
-                    launcher=SrunLauncher(),
+                    launcher=SingleNodeLauncher(),
                     worker_init=params['worker_init']
                 ),
             )
