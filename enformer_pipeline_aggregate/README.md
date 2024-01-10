@@ -103,6 +103,7 @@ An example of a config.json file is [here](./config_files). You should choose on
 - [X] Pipeline should be able to predict on reverse complements
 - [X] Create config templates for different servers (beagle3, polaris, theta e.t.c.)
 - [ ] Provide a pre-check to make sure "chr" chromosome nomenclature is used in the input files
+- [ ] Check or account for VCFs with indels
 
 
 ## Updates
