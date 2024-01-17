@@ -29,6 +29,16 @@ This environment contains all the software needed to run the pipeline; and you s
 ### 5. Edit the config.json file
 Instructions are below.
 
+### PRECHECKS BEFORE RUNNING THE PIPELINE (SO YOU DON'T WASTE TIME AND COMPUTE!$%EO#$UOP!)
+
+- [ ] Calculate expected SU usage of whole job.
+- [ ] Ask someone if they have saved your Enformer outputs already, or did your analysis already, etc.
+- [ ] Figure out the best pilot to run, and do a preliminary analysis before the full run.
+- [ ] Run "laptop" pilot first.
+- [ ] If you are planning to run more than 100 node hours, notify others first
+- [ ] Estimate storage footprint beforehand
+- [ ] Develop scalable analysis pipeline ahead of time, and run analysis WHILE large job is running to detect errors.
+
 ### 6. Run the pipeline
 There are two ways to do this (for now, #1 is recommended):
 
@@ -104,6 +114,8 @@ An example of a config.json file is [here](./config_files). You should choose on
 - [X] Create config templates for different servers (beagle3, polaris, theta e.t.c.)
 - [ ] Provide a pre-check to make sure "chr" chromosome nomenclature is used in the input files
 - [ ] Check or account for VCFs with indels
+- [ ] Develop laptop parsl config
+- [ ] UNIT TEST: Outputs should differ between individuals
 
 
 ## Updates
