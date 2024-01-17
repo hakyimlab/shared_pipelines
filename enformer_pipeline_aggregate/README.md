@@ -116,6 +116,7 @@ An example of a config.json file is [here](./config_files). You should choose on
 - [ ] Check or account for VCFs with indels
 - [ ] Develop laptop parsl config
 - [ ] UNIT TEST: Outputs should differ between individuals
+- [ ] Implement(maybe already is implemented) phased mean prediction
 
 
 ## Updates
