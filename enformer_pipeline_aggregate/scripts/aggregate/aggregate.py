@@ -9,6 +9,7 @@ import parsl
 from parsl.app.app import python_app
 import subprocess
 import argparse
+import shutil
 
 import multiprocessing
 
@@ -111,7 +112,11 @@ collection_fxn = return_prediction_function(use_parsl)
 
 app_futures = []
 for each_id in ids_names:
-    log_data = pd.read_csv(os.path.join(prediction_logfiles_folder, f'{each_id}_log.csv'))
+    if os.path.isfile(os.path.join(prediction_logfiles_folder, f'{each_id}_log.csv')):
+        log_data = pd.read_csv(os.path.join(prediction_logfiles_folder, f'{each_id}_log.csv'))
+    else:
+        continue
+    
     #print(log_data.head())
     for each_agg in agg_types:
         log_data = log_data.loc[log_data['sample'] == each_id, ]
@@ -132,4 +137,5 @@ print(f'INFO - Aggregation complete for all.')
 
 if args.delete_enformer_outputs:
     print(f'INFO - Deleting enformer predictions')
-    os.system(f"rm -rf {enformer_predictions_path}")
+    if os.path.isdir(enformer_predictions_path):
+        shutil.rmtree(enformer_predictions_path)

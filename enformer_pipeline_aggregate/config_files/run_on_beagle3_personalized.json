@@ -9,7 +9,7 @@
   "create_hdf5_file": false,
   "exclude_regions": true,
   "reverse_complement": false,
-  "batch_individuals": 3,
+  "batch_individuals": 1000,
   "vcf_files": {
     "folder": "/project2/haky/Data/GEUVADIS/vcf_snps_only",
     "files": {
@@ -44,8 +44,8 @@
   "fasta_file": "/project2/haky/Data/hg_sequences/hg38/Homo_sapiens_assembly38.fasta",
   "metadata_dir": "/beagle3/haky/users/temi/projects/TFXcan/enformer_test/metadata",
   "output_dir": "enformer_predictions",
-  "tracks_to_save":"4766,5110,5109,4799,4828,956",
-  "bins_to_save": -1,
+  "tracks_to_save": -1,
+  "bins_to_save": "446,447,448",
   "sequence_source": "personalized",
   "predictions_log_dir": "predictions_log",
   "batch_regions": 5,
@@ -62,7 +62,7 @@
   "parsl_parameters": {
     "job_name": "enformer_predict_some_genes",
     "num_of_full_nodes": 1,
-    "walltime": "00:20:00",
+    "walltime": "04:00:00",
     "init_blocks":1,
     "min_num_blocks": 0,
     "max_num_blocks": 4,

@@ -63,33 +63,6 @@ def write_logger(log_msg_type, logfile, message):
     if log_msg_type == 'warning' : setup_logger('summary_log', logfile) ; logger(message, 'warning', 'run_summary')
 
 
-
-
-
-# def slice_bins(locus, bin_size=128, nbins=896):
-#     import math
-#     locus = locus.split('_')
-#     start = int(locus[1])
-#     end = int(locus[2])
-#     midn = math.ceil((start + end) / 2)
-#     #print(f'Middle locations is: {midn}')
-#     nstart = midn - 57344 # (128*896) / 2
-#     #print(f'New start is: {nstart}')
-#     nend = midn + (57344 - 1)
-#     #print(f'New end is: {nend}')
-#     cnt_start = nstart
-#     slice_start = 0
-#     while cnt_start <= start:
-#         cnt_start += bin_size
-#         slice_start += 1
-#     cnt_start = nstart
-#     slice_end = 0
-#     while cnt_start <= end:
-#         cnt_start += bin_size
-#         slice_end += 1
-#     return(slice_start, slice_end)
-
-
 def slice_bins(locus, bin_size=128, nbins=896):
     import math
     import numpy as np
@@ -102,10 +75,20 @@ def slice_bins(locus, bin_size=128, nbins=896):
     send = sstart + ((end - start) - 1)
     bins = list(range(0, nbins*bin_size, bin_size))
     out = np.digitize([sstart, send], bins=bins).tolist()
+
     if((end - start) <= 128):
-        return(out)
+        pass
     elif(((end - start) > 128) or (end - start) % bin_size > 0):
         out[1] = out[1] + 1
+
+    # if [448], make it [448, 449]
+    # if [448, 448] make it [448, 449]
+    
+    if len(out) == 1:
+        out.append(out[0] + 1)
+    elif len(out) == 2:
+        if out[0] == out[1]:
+            out[1] = out[1] + 1
     return(out)
 
 
@@ -116,26 +99,27 @@ def save_haplotypes_h5_prediction(haplotype_predictions, metadata, output_dir, s
     import numpy
 
     region = metadata['region']
-    if aggregate_by_width == True:
-        bins_to_sum = slice_bins(region)
-    elif aggregate_by_width == False:
-        bins_to_sum = [None, None]
+    if isinstance(aggregate_by_width, bool):
+        if aggregate_by_width == True:
+            bins_to_aggregate = slice_bins(region)
+            print(f'INFO - aggregating by width: {bins_to_aggregate}')
+        elif aggregate_by_width == False:
+            bins_to_aggregate = [None, None]
+            print(f'INFO - Not aggregating by width')
     elif isinstance(aggregate_by_width, int):
-        bins_to_sum = slice_bins(region)
-        print(f'INFO - before, bins to sum were: {bins_to_sum}')
-        bins_to_sum = [bins_to_sum[0] - aggregate_by_width, bins_to_sum[1] + aggregate_by_width]
-        print(f'INFO - after, bins to sum were: {bins_to_sum}')
+        bins_to_aggregate = slice_bins(region)
+        bins_to_aggregate = [bins_to_aggregate[0] - aggregate_by_width, bins_to_aggregate[1] + aggregate_by_width]
+        print(f'INFO - aggregating by width +/- {aggregate_by_width}: {bins_to_aggregate}')
 
     for key, values in haplotype_predictions.items():
         #print(f'[INFO] This is what is being saved {values.shape}')
-        values = values[bins_to_sum[0]:bins_to_sum[1], : ].mean(axis=0)
-        print(bins_to_sum)
-        print(values.shape)
+        #print(values.shape)
+        values = values[bins_to_aggregate[0]:bins_to_aggregate[1], : ].mean(axis=0)
+        #print(values.shape)
+
         houtput = os.path.join(output_dir, sample, key)
         if not os.path.exists(houtput): os.makedirs(houtput, exist_ok=True)
         h5save = str(f'{houtput}/{region}_predictions.h5')
-        # for i in range(0, values.shape[0]):
-            #print(values[i, :].shape)
         with h5py.File(h5save, 'w') as hf:
             hf.create_dataset(region, data=values)
 

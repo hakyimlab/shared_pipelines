@@ -9,6 +9,7 @@ import numpy as np
 
 def aggregate_enformer_predictions(each_id, log_data, predictions_path, prediction_id, save_dir, agg_types, sequence_source, batch_num=None):
 
+
     import h5py
     import numpy as np
     import os, sys
@@ -22,10 +23,6 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
     # pre_center = 7
     # post_center = 9
     mean_center=[7,8,9]
-    # downstream = list(range(10, 17)) # or 10 to 17
-
-    #mean_center =  [0,1,2]
-
     global read_file
 
     # can aggregate by the mean of all bins, mean of the upstream and/or downstream alone, or just select the center
@@ -46,8 +43,6 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
 
         y = np.expand_dims(np.array(y), axis=1)
         dt = np.hstack((y, np.vstack(X)))
-        #dt = np.vstack(X)
-
         return dt
 
     def agg_by_center(pred_tracks, center):
@@ -85,9 +80,13 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
     elif each_id in ['random']:
         pred_type = 'random'
         haplotypes = ['haplotype0']
-    else:
+    elif each_id in ['personalized']:
         pred_type = 'var'
         haplotypes  = ['haplotype1', 'haplotype2']
+    elif sequence_source == 'personalized':
+        pred_type = 'var'
+        haplotypes  = ['haplotype1', 'haplotype2']
+
 
     print(f'INFO - Seeing {multiprocessing.cpu_count()} CPUs')
     print(f'INFO - Starting to collect predictions for {each_id}')
@@ -103,17 +102,19 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
             with h5py.File(fle, 'r') as f:
                 filekey = list(f.keys())[0]
                 output[region] = np.vstack(list(f[filekey]))
+                #print(region)
         else:
             print(f'ERROR - {region} predictions file does not exist.')
-
         return(output)
 
     if __name__ == '__main__':
 
         regions_list = log_data.loc[log_data['sequence_source'] == pred_type, ].region.values.tolist()
+        print(regions_list)
 
         pooled_dictionary = {}
         for haplotype in haplotypes:
+            print(f'INFO - Reading predictions for {haplotype}')
             pool = multiprocessing.Pool(4)
             outputs_list = pool.starmap(read_file, itertools.product(regions_list, [predictions_path], [haplotype])) #pool.map(read_file, regions_list) # 'haplotype1
 

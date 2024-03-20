@@ -40,6 +40,7 @@ if __name__ == 'predictUtils_two':
         bins_indices_raw = parameters['bins_to_save']
         tracks_indices_raw = parameters['tracks_to_save']
         reverse_complement = parameters["reverse_complement"]
+        aggregate_by_width = parameters['aggregate_by_width']
 
 if any([write_log['logtypes'][ltype] for ltype in ['memory', 'error', 'time', 'cache']]):
     write_log['logdir'] = os.path.join(project_dir, write_logdir)
@@ -176,9 +177,7 @@ def enformer_predict_on_batch(batch_regions, samples, logging_dictionary, path_t
                         #     print(f'Sample {sample} {input_region} {hap} predictions are of the correct shape:  {sample_predictions[hap].shape}')
                         
                     # otherwise, you can save the predictions ; prediction will be reshaped to (17, 5313) here
-                    sample_logging_info = loggerUtils.save_haplotypes_h5_prediction(haplotype_predictions=sample_predictions, metadata=samples_enformer_inputs['metadata'], output_dir=output_dir, sample=sample)
-
-                    #print(f'Sample {sample} {input_region} haplotypes predictions have been saved.')
+                    sample_logging_info = loggerUtils.save_haplotypes_h5_prediction(haplotype_predictions=sample_predictions, metadata=samples_enformer_inputs['metadata'], output_dir=output_dir, sample=sample, aggregate_by_width=aggregate_by_width)
 
                     # check logging info/dictionary for the sample and the region
                     logging_type = checksUtils.return_sample_logging_type(sample=sample, query_region=input_region, logging_dictonary=logging_dictionary)
