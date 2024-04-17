@@ -118,7 +118,7 @@ An example of a config.json file is [here](./config_files). You should choose on
 - [ ] UNIT TEST: Outputs should differ between individuals
 - [ ] Implement(maybe already is implemented) phased mean prediction
 - [ ] Allow specification of "max workers" and "available accelerator" parameters in the parsl config for more flexible runs esp. on beagle3
-
+- [ ] Implement prechecks. For example, the VCFs must be in "chr" chromosome format. 
 
 ## Updates
 
