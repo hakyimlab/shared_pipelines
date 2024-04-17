@@ -38,6 +38,7 @@ Instructions are below.
 - [ ] If you are planning to run more than 100 node hours, notify others first
 - [ ] Estimate storage footprint beforehand
 - [ ] Develop scalable analysis pipeline ahead of time, and run analysis WHILE large job is running to detect errors.
+- [ ] Are your VCF files in "chr" chromosome format (they need to be)
 
 ### 6. Run the pipeline
 There are two ways to do this (for now, #1 is recommended):
