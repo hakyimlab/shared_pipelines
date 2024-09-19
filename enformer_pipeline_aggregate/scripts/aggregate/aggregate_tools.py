@@ -86,6 +86,10 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
     elif sequence_source == 'personalized':
         pred_type = 'var'
         haplotypes  = ['haplotype1', 'haplotype2']
+    else:
+        pred_type = 'ref'
+        haplotypes = ['haplotype0']
+
 
 
     print(f'INFO - Seeing {multiprocessing.cpu_count()} CPUs')
@@ -115,7 +119,7 @@ def aggregate_enformer_predictions(each_id, log_data, predictions_path, predicti
         pooled_dictionary = {}
         for haplotype in haplotypes:
             print(f'INFO - Reading predictions for {haplotype}')
-            pool = multiprocessing.Pool(4)
+            pool = multiprocessing.Pool(32)
             outputs_list = pool.starmap(read_file, itertools.product(regions_list, [predictions_path], [haplotype])) #pool.map(read_file, regions_list) # 'haplotype1
 
             predictions =  {k: v for d in outputs_list for k, v in d.items()}

@@ -139,10 +139,13 @@ def extract_reference_sequence(region, fasta_func=None, resize_for_enformer=True
     if print_sequence == True:
         print(ref_sequences)
 
-    if (write_log is not None) and (write_log['logtypes']['cache'] == True):
-        msg_cac_log = f'[CACHE] (fasta) [{get_fastaExtractor.cache_info()} for {region}]'
-        CACHE_LOG_FILE = os.path.join(write_log['logdir'], 'cache_usage.log')
-        loggerUtils.write_logger(log_msg_type='cache', logfile=CACHE_LOG_FILE, message=msg_cac_log)
+    if (write_log is not None):
+        if (write_log['logtypes']['cache'] == True):
+            msg_cac_log = f'[CACHE] (fasta) [{get_fastaExtractor.cache_info()} for {region}]'
+            CACHE_LOG_FILE = os.path.join(write_log['logdir'], 'cache_usage.log')
+            loggerUtils.write_logger(log_msg_type='cache', logfile=CACHE_LOG_FILE, message=msg_cac_log)
+        elif write_log == False:
+            pass
 
     ohe = one_hot_encode(ref_sequences)
     if ohe is None:

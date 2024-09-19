@@ -70,6 +70,9 @@ if sequence_source == 'personalized':
             elif n_individuals > 0:
                 individuals = pd.read_table(individuals, header=None)[0].tolist()[0:(n_individuals)]
             print(type(individuals))
+        else:
+            individuals = [individuals]
+            print(individuals)
 
 agg_types = args.agg_types
 agg_types = agg_types[0].split(' ')
@@ -101,7 +104,18 @@ if use_parsl == True:
             parsl.load(parslConfiguration.beagle3_localParslConfig(parsl_params))
             #parsl.load(parslConfiguration.beagle3_tpParslConfig(parsl_params))
         elif args.parsl_executor == 'highthroughput':
-            parsl.load(parslConfiguration.polaris_htParslConfig(parsl_params))
+            parsl.load(parslConfiguration.beagle3_htParslConfig(parsl_params))
+
+    if args.hpc == 'midway3' or args.hpc == 'caslake':
+        parsl_params = {'working_dir':base_path, 'job_name':'aggregate_predictions', 'queue':"preemptable", 'walltime':"01:00:00", 'num_of_full_nodes': 1, 'min_num_blocks':0, 'max_num_blocks':2, "worker_init": "source ~/.bashrc; conda activate /beagle3/haky/users/shared_software/TFXcan-pipeline-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/beagle3/haky/users/shared_software/TFXcan-pipeline-tools/lib", "init_blocks": 1}
+        #parsl.load(parslConfiguration.localParslConfig_htpool(parsl_params))
+        #parsl.load(parslConfiguration.localParslConfig_htpool(parsl_params))
+        if args.parsl_executor == 'local':
+            parsl.load(parslConfiguration.midway3_localParslConfig(parsl_params))
+            #parsl.load(parslConfiguration.beagle3_tpParslConfig(parsl_params))
+        elif args.parsl_executor == 'highthroughput':
+            print(parsl_params)
+            parsl.load(parslConfiguration.midway3_htParslConfig(parsl_params))
 
     if args.hpc == 'polaris':
         parsl_params = {'working_dir':base_path, "job_name": "aggregate_predictions", "num_of_full_nodes": 4, "walltime": "06:00:00", "min_num_blocks": 0, "max_num_blocks": 8, "queue": "preemptable", "init_blocks": 1, "hpc": "polaris", "account": "covid-ct", "provider": "highthroughput", "worker_init": "source ~/.bashrc; conda activate /lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools; which python; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lus/grand/projects/TFXcan/imlab/shared/software/conda_envs/enformer-predict-tools/lib"}

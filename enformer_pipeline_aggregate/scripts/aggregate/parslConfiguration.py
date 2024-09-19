@@ -328,3 +328,104 @@ def beagle3_tpParslConfig(params):
         run_dir=rundir
     )
     return(local_tpex)
+
+
+def midway3_localParslConfig(params):
+
+    import parsl
+    # Make a config that runs on two nodes
+    from parsl.executors import HighThroughputExecutor
+    from parsl.providers import LocalProvider
+    from parsl.config import Config
+    from parsl.channels import LocalChannel
+    from parsl.launchers import SingleNodeLauncher
+
+    import os
+
+    print(f'Parsl version: {parsl.__version__}')
+    # I defined these locations otherwise parsl will use the current directory to output the run informations and log messages
+    workingdir = params['working_dir']
+    rundir = os.path.join(workingdir, 'runinfo')
+    #job_name = params['job_name']
+    #parsl.clear()
+
+    local_htex = Config(
+        executors=[
+            HighThroughputExecutor(
+                label="htex_Local",
+                max_workers=4, # vs max_workers
+                available_accelerators=4,
+                worker_debug=True,
+                cores_per_worker=18, # how many cores per worker #nodes_per_block, 2 is usually enough or 1.
+                working_dir=workingdir,
+                provider=LocalProvider(
+                    channel=LocalChannel(),
+                    init_blocks=1,
+                    nodes_per_block=params['num_of_full_nodes'],
+                    min_blocks=params['min_num_blocks'],
+                    max_blocks=params['max_num_blocks'],
+                    launcher=SingleNodeLauncher()
+                ),
+            )
+        ],
+        strategy=None,
+        run_dir=rundir
+    )
+
+    return(local_htex)
+
+
+
+def midway3_htParslConfig(params):
+
+    import parsl
+    from parsl.config import Config as ParslConfig
+    from parsl.providers import SlurmProvider
+    from parsl.executors import HighThroughputExecutor
+    from parsl.launchers import SrunLauncher
+    import os
+
+    print(f'Parsl version: {parsl.__version__}')
+    workingdir = params['working_dir']
+    rundir = os.path.join(workingdir, 'runinfo')
+
+    scheduler_options = [f"#SBATCH --partition=caslake"]
+    scheduler_options = '\n'.join(scheduler_options)
+
+    #SBATCH --constraint=rtx6000		# Only RTX 6000 (can set to v100 or a100)
+    #SBATCH --cpus-per-task=1		# Number of threads
+    #SBATCH --ntasks-per-node=1		# Number of CPU cores to drive GPU
+    # ,"#SBATCH --constraint=rtx6000"
+
+    user_opts = {
+        'caslake': {
+            # Node setup: activate necessary conda environment and such.
+            'worker_init': params['worker_init'],
+            # ALCF allocation to use
+            'account': 'pi-haky',
+        }
+    }
+
+    config = ParslConfig(
+        executors=[
+            HighThroughputExecutor(
+                label="htex_slurm",
+                available_accelerators=4,  # Pin each worker to a different GPU
+                max_workers=4,
+                provider=SlurmProvider(
+                    launcher=SrunLauncher(),  # Ensures 1 manger per node, work on all 64 cores
+                    account=user_opts['caslake']['account'],
+                    worker_init=user_opts['caslake']['worker_init'],
+                    walltime=params['walltime'],
+                    init_blocks=params['init_blocks'],
+                    scheduler_options=scheduler_options,
+                    nodes_per_block=params['num_of_full_nodes'], 
+                    min_blocks=params['min_num_blocks'],
+                    max_blocks=params['max_num_blocks'],  
+                ),
+            )
+        ],
+        run_dir=rundir,
+        retries=6
+    )
+    return config
